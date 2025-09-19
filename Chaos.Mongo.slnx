@@ -1,0 +1,29 @@
+<Solution>
+  <Folder Name="/build/">
+    <Project Path="build/Nuke.csproj">
+      <Configuration Solution="Debug|Any CPU" Project="Debug|Any CPU|NoBuild" />
+      <Configuration Solution="Release|Any CPU" Project="Release|Any CPU|NoBuild" />
+    </Project>
+  </Folder>
+  <Folder Name="/misc/">
+    <File Path=".editorconfig" />
+    <File Path=".gitignore" />
+    <File Path="coverlet.xml" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+    <File Path="global.json" />
+    <File Path="nuget.config" />
+  </Folder>
+  <Folder Name="/misc/github/" />
+  <Folder Name="/misc/github/workflows/">
+    <File Path=".github\workflows\ci.yml" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/Chaos.Mongo/Chaos.Mongo.csproj" />
+    <File Path="src/Directory.Build.props" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Chaos.Mongo.Tests/Chaos.Mongo.Tests.csproj" />
+    <File Path="tests/Directory.Build.props" />
+  </Folder>
+</Solution>
