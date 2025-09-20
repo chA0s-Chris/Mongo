@@ -2,4 +2,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Chaos.Mongo\Chaos.Mongo.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Testcontainers.MongoDb" />
+  </ItemGroup>
 </Project>
