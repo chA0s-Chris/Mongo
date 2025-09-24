@@ -120,7 +120,9 @@ public class MongoHelperIntegrationTests
                 result.ModifiedCount.Should().Be(1);
 
                 throw new InvalidOperationException("Something went wrong...");
+#pragma warning disable CS0162 // Unreachable code detected
                 return 0;
+#pragma warning restore CS0162 // Unreachable code detected
             });
         }
         catch (InvalidOperationException e)
