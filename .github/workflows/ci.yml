@@ -9,15 +9,25 @@ on:
 jobs:
   ci:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
+
+      - name: Authenticate to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_PAT }}
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
         with:
           dotnet-version: |
             8.0.x
             9.0.x
+
       - name: Run NUKE pipeline
         run: bash build.sh Test
