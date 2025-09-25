@@ -6,8 +6,8 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageId>Chaos.Mongo</PackageId>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <!-- <PackageIcon>mongo.png</PackageIcon> -->
-    <Description>Chaos.Mongo - </Description>
+    <PackageIcon>mongo.png</PackageIcon>
+    <Description>Chaos.Mongo -</Description>
     <Authors>Christian Flessa</Authors>
     <Copyright>Copyright © 2025 Christian Flessa</Copyright>
     <PackageProjectUrl>https://github.com/chA0s-Chris/Chaos.Mongo</PackageProjectUrl>
@@ -25,6 +25,6 @@
 
   <ItemGroup>
     <None Include="../../README.md" Pack="true" Visible="false" PackagePath="" />
-    <!-- <None Include="../../dist/mongo.png" Pack="true" Visible="false" PackagePath="" /> -->
+    <None Include="../../dist/mongo.png" Pack="true" Visible="false" PackagePath="" />
   </ItemGroup>
 </Project>
