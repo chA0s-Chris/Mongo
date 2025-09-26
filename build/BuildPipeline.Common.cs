@@ -42,9 +42,9 @@ internal partial class BuildPipeline
     [Parameter(Name = "NUGET_PACKAGES_DIRECTORY")]
     private AbsolutePath PackagesDirectory { get; set; } = RootDirectory / ".nuget";
 
-    private AbsolutePath PublishDirectory => RootDirectory / "publish";
+    private AbsolutePath PublishDirectory => ArtifactsDirectory / "packages";
 
-    private String ReleaseNotes { get; set; }
+    private String ReleaseNotes { get; set; } = String.Empty;
 
     private String SemanticVersion { get; set; } = String.Empty;
 
