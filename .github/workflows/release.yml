@@ -1,0 +1,132 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Semantic version to release (e.g. 1.2.3 or 1.2.3-dev)'
+        required: true
+        default: '0.1.0'
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    env:
+      VERSION: ${{ github.event.inputs.version }}
+      IS_PRERELEASE: ${{ contains(github.event.inputs.version, '-') }}
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+
+      - name: Initialize git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Decode SNK
+        run: |
+          echo "${{ secrets.CHAOSMONGO_SNK }}" | base64 --decode > Chaos.Mongo.snk
+
+      - name: Create local tag v${{ env.VERSION }}
+        run: |
+          git tag -a "v${{ env.VERSION }}" -m "Release v${{ env.VERSION }}"
+
+      - name: Draft PR-level release notes
+        id: drafter
+        uses: release-drafter/release-drafter@v6
+        with:
+          config-name: release-drafter.yml
+          tag: v${{ env.VERSION }}
+          name: v${{ env.VERSION }}
+          publish: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create ReleaseNotes.md (used by packing)
+        run: |
+          echo "# ${{ steps.drafter.outputs.tag_name }} ($(date +%Y-%m-%d))" > ReleaseNotes.md
+          echo "" >> ReleaseNotes.md
+          echo "${{ steps.drafter.outputs.body }}" >> ReleaseNotes.md
+
+      - name: Restore & Pack
+        run: |
+          bash build.sh Pack --release-version ${{ env.VERSION }}
+
+      - name: Push tag v${{ env.VERSION }}
+        run: |
+          git push origin "v${{ env.VERSION }}"
+
+      - name: Update CHANGELOG.md
+        if: ${{ env.IS_PRERELEASE == 'false' }}
+        run: |
+          HEADER_FILE="$(mktemp)"
+          CHANGES_FILE="$(mktemp)"
+
+          # keep header lines until first '## '
+          sed -n '/^## /q; p' CHANGELOG.md > "$HEADER_FILE"
+          sed -n '/^## /,$p' CHANGELOG.md > "$CHANGES_FILE"
+
+          cat "$HEADER_FILE" > CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          echo "## ${{ steps.drafter.outputs.tag_name }} ($(date +%Y-%m-%d))" >> CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          echo "${{ steps.drafter.outputs.body }}" >> CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          cat "$CHANGES_FILE" >> CHANGELOG.md
+
+      - name: Commit CHANGELOG.md to new release branch
+        if: ${{ env.IS_PRERELEASE == 'false' }}
+        uses: EndBug/add-and-commit@v9
+        with:
+          author_name: 'github-actions[bot]'
+          author_email: 'github-actions[bot]@users.noreply.github.com'
+          message: "docs: update CHANGELOG for ${{ env.VERSION }} [skip ci]"
+          add: 'CHANGELOG.md'
+          new_branch: "release/changelog-v${{ env.VERSION }}"
+          push: true
+
+      - name: Open PR
+        if: ${{ env.IS_PRERELEASE == 'false' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          BRANCH="release/changelog-v${{ env.VERSION }}"
+          TITLE="docs: update CHANGELOG.md for ${{ steps.drafter.outputs.tag_name }}"
+          BODY="Automatic CHANGELOG.md update for ${{ steps.drafter.outputs.tag_name }}."
+          gh pr view "$BRANCH" --json url >/dev/null 2>&1 || \
+            gh pr create --title "$TITLE" --body "$BODY" --base main --head "$BRANCH"
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.drafter.outputs.tag_name }}
+          name: ${{ steps.drafter.outputs.name }}
+          body: ${{ steps.drafter.outputs.body }}
+          draft: false
+          prerelease: ${{ env.IS_PRERELEASE == 'true' }}
+          make_latest: ${{ env.IS_PRERELEASE == 'false' }}
+          files: |
+            artifacts/packages/*.nupkg
+            artifacts/packages/*.snupkg
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push to nuget.org
+        run: |
+          dotnet nuget push artifacts/packages/*.nupkg \
+            --api-key ${{ secrets.NUGET_API_KEY }} \
+            --source https://api.nuget.org/v3/index.json \
+            --skip-duplicate

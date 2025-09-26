@@ -14,9 +14,13 @@
     <File Path="global.json" />
     <File Path="nuget.config" />
   </Folder>
-  <Folder Name="/misc/github/" />
+  <Folder Name="/misc/github/">
+    <File Path=".github/release-drafter.yml" />
+  </Folder>
   <Folder Name="/misc/github/workflows/">
-    <File Path=".github\workflows\ci.yml" />
+    <File Path=".github/workflows/ci.yml" />
+    <File Path=".github/workflows/release.yml" />
+    <File Path=".github/workflows/update-draft.yml" />
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/Chaos.Mongo/Chaos.Mongo.csproj" />

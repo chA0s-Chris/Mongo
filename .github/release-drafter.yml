@@ -1,0 +1,61 @@
+name-template: 'vNext'
+tag-template: 'vNext'
+
+branches:
+  - main
+
+change-template: '- $TITLE (#$NUMBER) by @$AUTHOR'
+
+change-title-escapes: '\\<*_&'
+no-changes-template: '- No changes since last release'
+
+sort-by: merged_at
+sort-direction: descending
+
+exclude-contributors:
+  - renovate[bot]
+
+exclude-labels:
+  - skip-changelog
+  - renovate
+  - chore
+  - ci
+  - build
+  - test
+  - refactor
+
+include-labels:
+  - breaking
+  - enhancement
+  - feature
+  - bug
+  - fix
+  - perf
+  - docs
+  - documentation
+
+category-template: '### $TITLE'
+categories:
+  - title: '💥 Breaking Changes'
+    labels:
+      - breaking
+  - title: '✨ Features'
+    labels:
+      - enhancement
+      - feature
+  - title: '🐛 Bug Fixes'
+    labels:
+      - bug
+      - fix
+  - title: '⚡ Performance Improvements'
+    labels:
+      - perf
+  - title: '📚 Documentation'
+    labels:
+      - docs
+      - documentation
+
+include-pre-releases: false
+
+template: |
+  $CHANGES

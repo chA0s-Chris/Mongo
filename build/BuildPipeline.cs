@@ -4,6 +4,7 @@ namespace BuildPipeline;
 
 using Nuke.Common;
 using Nuke.Common.CI.GitLab;
+using Nuke.Common.IO;
 using Serilog;
 
 internal partial class BuildPipeline : NukeBuild
@@ -17,6 +18,11 @@ internal partial class BuildPipeline : NukeBuild
 
         SemanticVersion = version.ToString();
         AssemblyVersion = $"{version.Major}.{version.Minor}.{version.Patch}.0";
+
+        if (ReleaseNotesFile.FileExists())
+        {
+            ReleaseNotes = ReleaseNotesFile.ReadAllText();
+        }
     }
 
     protected override void OnBuildInitialized()

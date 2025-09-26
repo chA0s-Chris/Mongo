@@ -17,6 +17,20 @@ internal partial class BuildPipeline
     [Parameter("URI of the NuGet feed to publish to", Name = "NUGET_FEED_URI")]
     public String NuGetFeedUri { get; init; } = String.Empty;
 
+    private static Dictionary<Char, String> EscapeCharacters { get; } = new()
+    {
+        ['%'] = "%25",
+        ['$'] = "%24",
+        ['@'] = "%40",
+        ['\''] = "%27",
+        ['('] = "%28",
+        [')'] = "%29",
+        [';'] = "%3B",
+        ['?'] = "%3F",
+        ['*'] = "%2A",
+        [','] = "%2C"
+    };
+
     private Target Pack => target =>
         target.DependsOn(Restore)
               .Executes(() =>
@@ -28,13 +42,16 @@ internal partial class BuildPipeline
                       DotNetPack(x => x.SetConfiguration(TargetBuildConfiguration)
                                        .SetProject(project)
                                        .SetOutputDirectory(PublishDirectory)
+                                       .DisablePackageRequireLicenseAcceptance()
                                        .EnableContinuousIntegrationBuild()
                                        .AddProperty("AdditionalConstants", "NUGET_RELEASE")
                                        .AddProperty("SignAssembly", "true")
                                        .AddProperty("AssemblyOriginatorKeyFile", "../../Chaos.Mongo.snk")
                                        .EnableIncludeSymbols()
                                        .SetSymbolPackageFormat(DotNetSymbolPackageFormat.snupkg)
-                                       .SetVersion(SemanticVersion));
+                                       .SetVersion(SemanticVersion)
+                                       .When(!String.IsNullOrEmpty(ReleaseNotes),
+                                             t => t.SetPackageReleaseNotes(EscapeStringForMsBuild(ReleaseNotes))));
 
                       packageCount++;
                   }
@@ -55,4 +72,7 @@ internal partial class BuildPipeline
                                             .SetApiKey(NuGetApiKey));
                   }
               });
+
+    private static String EscapeStringForMsBuild(String text)
+        => String.Concat(text.Select(c => EscapeCharacters.TryGetValue(c, out var replacement) ? replacement : c.ToString()));
 }

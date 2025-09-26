@@ -14,6 +14,8 @@ internal partial class BuildPipeline
     [Parameter]
     public String ReleaseVersion { get; set; } = "0.1.0-dev";
 
+    private static AbsolutePath ReleaseNotesFile => RootDirectory / "ReleaseNotes.md";
+
     private AbsolutePath ArtifactsDirectory => RootDirectory / "artifacts";
 
     private String AssemblyVersion { get; set; } = String.Empty;
@@ -41,6 +43,8 @@ internal partial class BuildPipeline
     private AbsolutePath PackagesDirectory { get; set; } = RootDirectory / ".nuget";
 
     private AbsolutePath PublishDirectory => RootDirectory / "publish";
+
+    private String ReleaseNotes { get; set; }
 
     private String SemanticVersion { get; set; } = String.Empty;
 
