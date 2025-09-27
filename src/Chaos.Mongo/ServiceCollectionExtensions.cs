@@ -2,6 +2,7 @@
 // This file is licensed under the MIT license. See LICENSE in the project root for more information.
 namespace Chaos.Mongo;
 
+using Chaos.Mongo.Configuration;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -58,6 +59,16 @@ public static class ServiceCollectionExtensions
         });
     }
 
+    /// <summary>
+    /// Registers a Mongo configurator that will be executed during application startup.
+    /// </summary>
+    public static IServiceCollection AddMongoConfigurator<T>(this IServiceCollection services)
+        where T : class, IMongoConfigurator
+    {
+        services.AddTransient<IMongoConfigurator, T>();
+        return services;
+    }
+
     private static IServiceCollection AddMongoInternal(this IServiceCollection services, OptionsBuilder<MongoOptions> builder)
     {
         services.AddSingleton<IValidateOptions<MongoOptions>, MongoOptionsValidation>();
@@ -76,6 +87,8 @@ public static class ServiceCollectionExtensions
 
         services.AddSingleton<ICollectionTypeMap, CollectionTypeMap>();
         services.AddSingleton<IMongoHelper, MongoHelper>();
+
+        services.AddTransient<IMongoConfiguratorRunner, MongoConfiguratorRunner>();
 
         return services;
     }
