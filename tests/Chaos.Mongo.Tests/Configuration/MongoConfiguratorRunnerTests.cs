@@ -3,6 +3,7 @@
 namespace Chaos.Mongo.Tests.Configuration;
 
 using Chaos.Mongo.Configuration;
+using Chaos.Testing;
 using FluentAssertions;
 using Moq;
 using NUnit.Framework;
@@ -15,11 +16,12 @@ public class MongoConfiguratorRunnerTests
         // Arrange
         var helper = new Mock<IMongoHelper>(MockBehavior.Strict);
         var configurator = new Mock<IMongoConfigurator>(MockBehavior.Strict);
+        var logger = TestLogging.GetTestLogger<MongoConfiguratorRunner>();
 
         using var cts = new CancellationTokenSource();
         await cts.CancelAsync();
 
-        var sut = new MongoConfiguratorRunner(helper.Object, [configurator.Object]);
+        var sut = new MongoConfiguratorRunner(helper.Object, logger, [configurator.Object]);
 
         // Act
         // ReSharper disable once AccessToDisposedClosure
@@ -36,6 +38,7 @@ public class MongoConfiguratorRunnerTests
         var helper = new Mock<IMongoHelper>(MockBehavior.Strict);
         var first = new Mock<IMongoConfigurator>(MockBehavior.Strict);
         var second = new Mock<IMongoConfigurator>(MockBehavior.Strict);
+        var logger = TestLogging.GetTestLogger<MongoConfiguratorRunner>();
 
         first.Setup(x => x.ConfigureAsync(helper.Object, It.IsAny<CancellationToken>()))
              .ThrowsAsync(new InvalidOperationException("boom"));
@@ -44,7 +47,7 @@ public class MongoConfiguratorRunnerTests
         second.Setup(x => x.ConfigureAsync(It.IsAny<IMongoHelper>(), It.IsAny<CancellationToken>()))
               .Throws(new AssertionException("Second configurator should not be invoked if the first fails."));
 
-        var sut = new MongoConfiguratorRunner(helper.Object,
+        var sut = new MongoConfiguratorRunner(helper.Object, logger,
         [
             first.Object,
             second.Object
@@ -62,6 +65,7 @@ public class MongoConfiguratorRunnerTests
     {
         // Arrange
         var helper = new Mock<IMongoHelper>(MockBehavior.Strict);
+        var logger = TestLogging.GetTestLogger<MongoConfiguratorRunner>();
 
         var first = new Mock<IMongoConfigurator>(MockBehavior.Strict);
         var second = new Mock<IMongoConfigurator>(MockBehavior.Strict);
@@ -74,7 +78,7 @@ public class MongoConfiguratorRunnerTests
               .Setup(x => x.ConfigureAsync(helper.Object, It.IsAny<CancellationToken>()))
               .Returns(Task.CompletedTask);
 
-        var sut = new MongoConfiguratorRunner(helper.Object,
+        var sut = new MongoConfiguratorRunner(helper.Object, logger,
         [
             first.Object,
             second.Object
@@ -93,7 +97,8 @@ public class MongoConfiguratorRunnerTests
     {
         // Arrange
         var helper = new Mock<IMongoHelper>(MockBehavior.Strict);
-        var sut = new MongoConfiguratorRunner(helper.Object, new List<IMongoConfigurator>());
+        var logger = TestLogging.GetTestLogger<MongoConfiguratorRunner>();
+        var sut = new MongoConfiguratorRunner(helper.Object, logger, new List<IMongoConfigurator>());
 
         // Act
         var act = async () => await sut.RunConfiguratorsAsync(CancellationToken.None);

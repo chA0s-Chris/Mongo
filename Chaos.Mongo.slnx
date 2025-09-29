@@ -28,6 +28,7 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Chaos.Mongo.Tests/Chaos.Mongo.Tests.csproj" />
+    <Project Path="tests/Chaos.Testing/Chaos.Testing.csproj" />
     <File Path="tests/Directory.Build.props" />
   </Folder>
 </Solution>
