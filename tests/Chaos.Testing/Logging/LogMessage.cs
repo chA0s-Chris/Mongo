@@ -4,9 +4,10 @@ namespace Chaos.Testing.Logging;
 
 using Microsoft.Extensions.Logging;
 
-public sealed class NUnitTestLoggerProvider : ILoggerProvider
-{
-    public void Dispose() { }
-
-    public ILogger CreateLogger(String _) => new NUnitTestLogger();
-}
+public record LogMessage(
+    DateTime Timestamp,
+    LogLevel LogLevel,
+    EventId EventId,
+    Object? State,
+    Exception? Exception,
+    String Message);

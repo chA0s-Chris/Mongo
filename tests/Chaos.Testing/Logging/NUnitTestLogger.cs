@@ -4,14 +4,17 @@ namespace Chaos.Testing.Logging;
 
 using Microsoft.Extensions.Logging;
 
-public sealed class NUnitTestLogger : ILogger
+public class NUnitTestLogger<T> : ILogger<T>
 {
-    private readonly String _categoryName;
+    private readonly Boolean _captureMessages;
+    private readonly List<LogMessage> _messages = [];
 
-    public NUnitTestLogger(String categoryName)
+    public NUnitTestLogger(Boolean captureMessages = false)
     {
-        _categoryName = String.IsNullOrEmpty(categoryName) ? nameof(NUnitTestLogger) : categoryName;
+        _captureMessages = captureMessages;
     }
+
+    public IReadOnlyList<LogMessage> LogMessages => _messages;
 
     public IDisposable? BeginScope<TState>(TState state)
         where TState : notnull
@@ -36,6 +39,12 @@ public sealed class NUnitTestLogger : ILogger
             return;
         }
 
+        if (_captureMessages)
+        {
+            var logMessage = new LogMessage(DateTime.UtcNow, logLevel, eventId, state, exception, message);
+            _messages.Add(logMessage);
+        }
+
         var output = $"{logLevel}: {message}";
         if (exception is not null)
         {
@@ -51,4 +60,10 @@ public sealed class NUnitTestLogger : ILogger
 
         public void Dispose() { }
     }
+}
+
+public sealed class NUnitTestLogger : NUnitTestLogger<NUnitTestLogger>
+{
+    public NUnitTestLogger(Boolean captureMessages = false)
+        : base(captureMessages) { }
 }

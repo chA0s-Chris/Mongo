@@ -3,7 +3,7 @@
 namespace Chaos.Mongo.Tests.Configuration;
 
 using Chaos.Mongo.Configuration;
-using Chaos.Testing;
+using Chaos.Testing.Logging;
 using FluentAssertions;
 using Moq;
 using NUnit.Framework;
@@ -16,7 +16,7 @@ public class MongoConfiguratorRunnerTests
         // Arrange
         var helper = new Mock<IMongoHelper>(MockBehavior.Strict);
         var configurator = new Mock<IMongoConfigurator>(MockBehavior.Strict);
-        var logger = TestLogging.GetTestLogger<MongoConfiguratorRunner>();
+        var logger = new NUnitTestLogger<MongoConfiguratorRunner>();
 
         using var cts = new CancellationTokenSource();
         await cts.CancelAsync();
@@ -38,7 +38,7 @@ public class MongoConfiguratorRunnerTests
         var helper = new Mock<IMongoHelper>(MockBehavior.Strict);
         var first = new Mock<IMongoConfigurator>(MockBehavior.Strict);
         var second = new Mock<IMongoConfigurator>(MockBehavior.Strict);
-        var logger = TestLogging.GetTestLogger<MongoConfiguratorRunner>();
+        var logger = new NUnitTestLogger<MongoConfiguratorRunner>();
 
         first.Setup(x => x.ConfigureAsync(helper.Object, It.IsAny<CancellationToken>()))
              .ThrowsAsync(new InvalidOperationException("boom"));
@@ -65,7 +65,7 @@ public class MongoConfiguratorRunnerTests
     {
         // Arrange
         var helper = new Mock<IMongoHelper>(MockBehavior.Strict);
-        var logger = TestLogging.GetTestLogger<MongoConfiguratorRunner>();
+        var logger = new NUnitTestLogger<MongoConfiguratorRunner>();
 
         var first = new Mock<IMongoConfigurator>(MockBehavior.Strict);
         var second = new Mock<IMongoConfigurator>(MockBehavior.Strict);
@@ -97,7 +97,7 @@ public class MongoConfiguratorRunnerTests
     {
         // Arrange
         var helper = new Mock<IMongoHelper>(MockBehavior.Strict);
-        var logger = TestLogging.GetTestLogger<MongoConfiguratorRunner>();
+        var logger = new NUnitTestLogger<MongoConfiguratorRunner>();
         var sut = new MongoConfiguratorRunner(helper.Object, logger, new List<IMongoConfigurator>());
 
         // Act
