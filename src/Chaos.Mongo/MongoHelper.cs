@@ -5,12 +5,22 @@ namespace Chaos.Mongo;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 
+/// <summary>
+/// Provides a helper abstraction for working with MongoDB, including collection access and distributed locking.
+/// </summary>
 public sealed class MongoHelper : IMongoHelper
 {
     private readonly ICollectionTypeMap _collectionTypeMap;
     private readonly String _holderId;
     private readonly String _lockCollectionName;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MongoHelper"/> class.
+    /// </summary>
+    /// <param name="connection">The MongoDB connection instance.</param>
+    /// <param name="collectionTypeMap">The collection type map for resolving collection names.</param>
+    /// <param name="options">Optional MongoDB configuration options.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="connection"/> or <paramref name="collectionTypeMap"/> is null.</exception>
     public MongoHelper(IMongoConnection connection,
                        ICollectionTypeMap collectionTypeMap,
                        IOptions<MongoOptions>? options)
@@ -32,6 +42,12 @@ public sealed class MongoHelper : IMongoHelper
     /// <inheritdoc/>
     public IMongoDatabase Database { get; }
 
+    /// <summary>
+    /// Releases a MongoDB distributed lock.
+    /// </summary>
+    /// <param name="lockName">The name of the lock to release.</param>
+    /// <param name="holder">The holder ID that currently owns the lock.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
     internal async Task ReleaseLockAsync(String lockName, String holder)
     {
         var lockCollection = Database.GetCollection<MongoLockDocument>(_lockCollectionName);

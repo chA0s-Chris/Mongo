@@ -4,8 +4,12 @@ namespace Chaos.Mongo;
 
 using Microsoft.Extensions.Options;
 
+/// <summary>
+/// Validates <see cref="MongoOptions"/> configuration at application startup.
+/// </summary>
 public sealed class MongoOptionsValidation : IValidateOptions<MongoOptions>
 {
+    /// <inheritdoc/>
     public ValidateOptionsResult Validate(String? name, MongoOptions options)
     {
         if (options is null)

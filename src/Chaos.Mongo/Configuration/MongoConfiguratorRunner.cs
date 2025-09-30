@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2025 Christian Flessa. All rights reserved.
+// Copyright (c) 2025 Christian Flessa. All rights reserved.
 // This file is licensed under the MIT license. See LICENSE in the project root for more information.
 namespace Chaos.Mongo.Configuration;
 
@@ -11,6 +11,13 @@ public class MongoConfiguratorRunner : IMongoConfiguratorRunner
     private readonly ILogger<MongoConfiguratorRunner> _logger;
     private readonly IMongoHelper _mongoHelper;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MongoConfiguratorRunner"/> class.
+    /// </summary>
+    /// <param name="mongoHelper">The MongoDB helper instance.</param>
+    /// <param name="logger">The logger instance.</param>
+    /// <param name="configurators">The collection of configurators to run.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="mongoHelper"/>, <paramref name="logger"/>, or <paramref name="configurators"/> is null.</exception>
     public MongoConfiguratorRunner(IMongoHelper mongoHelper,
                                    ILogger<MongoConfiguratorRunner> logger,
                                    IEnumerable<IMongoConfigurator> configurators)

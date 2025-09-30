@@ -2,11 +2,22 @@
 // This file is licensed under the MIT license. See LICENSE in the project root for more information.
 namespace Chaos.Mongo;
 
+/// <summary>
+/// Default implementation of <see cref="IMongoLock"/> representing a distributed lock in MongoDB.
+/// </summary>
 public class MongoLock : IMongoLock
 {
     private readonly Func<Task> _releaseAction;
     private Boolean _disposed;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MongoLock"/> class.
+    /// </summary>
+    /// <param name="id">The unique identifier of the lock.</param>
+    /// <param name="validUntil">The UTC date and time when the lock will automatically expire.</param>
+    /// <param name="releaseAction">The action to execute when the lock is released.</param>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="id"/> is null or whitespace.</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="releaseAction"/> is null.</exception>
     public MongoLock(String id, DateTime validUntil, Func<Task> releaseAction)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
@@ -17,10 +28,13 @@ public class MongoLock : IMongoLock
         _releaseAction = releaseAction;
     }
 
+    /// <inheritdoc/>
     public String Id { get; }
 
+    /// <inheritdoc/>
     public DateTime ValidUntil { get; }
 
+    /// <inheritdoc/>
     public async ValueTask DisposeAsync()
     {
         if (_disposed)

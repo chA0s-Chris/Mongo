@@ -4,6 +4,9 @@ namespace Chaos.Mongo;
 
 using MongoDB.Driver;
 
+/// <summary>
+/// Representation of a MongoDB connection consisting of the MongoDB client and the current database.
+/// </summary>
 public interface IMongoConnection
 {
     /// <summary>
