@@ -26,6 +26,7 @@ public class MongoHelperLockIntegrationTests
                                   options.DefaultDatabase = "LockTestDb";
                                   options.HolderId = "direct-release-holder";
                               })
+                              .Services
                               .BuildServiceProvider();
 
         var mongoHelper = (MongoHelper)serviceProvider.GetRequiredService<IMongoHelper>();
@@ -52,6 +53,7 @@ public class MongoHelperLockIntegrationTests
                                   options.DefaultDatabase = "LockTestDb";
                                   options.HolderId = "actual-holder";
                               })
+                              .Services
                               .BuildServiceProvider();
 
         var mongoHelper = (MongoHelper)serviceProvider.GetRequiredService<IMongoHelper>();
@@ -79,6 +81,7 @@ public class MongoHelperLockIntegrationTests
                                   options.DefaultDatabase = "LockTestDb";
                                   options.HolderId = "test-holder";
                               })
+                              .Services
                               .BuildServiceProvider();
 
         var mongoHelper = (MongoHelper)serviceProvider.GetRequiredService<IMongoHelper>();
@@ -111,6 +114,7 @@ public class MongoHelperLockIntegrationTests
                           {
                               options.DefaultDatabase = "LockTestDb";
                           })
+                          .Services
                           .BuildServiceProvider()
                           .GetRequiredService<IMongoHelper>();
 
@@ -138,6 +142,7 @@ public class MongoHelperLockIntegrationTests
                           {
                               options.DefaultDatabase = "LockTestDb";
                           })
+                          .Services
                           .BuildServiceProvider()
                           .GetRequiredService<IMongoHelper>();
 
@@ -165,6 +170,7 @@ public class MongoHelperLockIntegrationTests
                           {
                               options.DefaultDatabase = "LockTestDb";
                           })
+                          .Services
                           .BuildServiceProvider()
                           .GetRequiredService<IMongoHelper>();
 
@@ -187,6 +193,7 @@ public class MongoHelperLockIntegrationTests
                           {
                               options.DefaultDatabase = "LockTestDb";
                           })
+                          .Services
                           .BuildServiceProvider()
                           .GetRequiredService<IMongoHelper>();
 
@@ -220,6 +227,7 @@ public class MongoHelperLockIntegrationTests
                           options.DefaultDatabase = "LockTestDb";
                           options.HolderId = "holder-1";
                       })
+                      .Services
                       .BuildServiceProvider()
                       .GetRequiredService<IMongoHelper>();
 
@@ -229,6 +237,7 @@ public class MongoHelperLockIntegrationTests
                           options.DefaultDatabase = "LockTestDb";
                           options.HolderId = "holder-2";
                       })
+                      .Services
                       .BuildServiceProvider()
                       .GetRequiredService<IMongoHelper>();
 
@@ -251,6 +260,7 @@ public class MongoHelperLockIntegrationTests
                           {
                               options.DefaultDatabase = "LockTestDb";
                           })
+                          .Services
                           .BuildServiceProvider()
                           .GetRequiredService<IMongoHelper>();
         using var cts = new CancellationTokenSource();
@@ -273,6 +283,7 @@ public class MongoHelperLockIntegrationTests
                           {
                               options.DefaultDatabase = "LockTestDb";
                           })
+                          .Services
                           .BuildServiceProvider()
                           .GetRequiredService<IMongoHelper>();
         var leaseTime = TimeSpan.FromMinutes(10);
@@ -296,6 +307,7 @@ public class MongoHelperLockIntegrationTests
                           {
                               options.DefaultDatabase = "LockTestDb";
                           })
+                          .Services
                           .BuildServiceProvider()
                           .GetRequiredService<IMongoHelper>();
 
@@ -316,6 +328,7 @@ public class MongoHelperLockIntegrationTests
                           {
                               options.DefaultDatabase = "LockTestDb";
                           })
+                          .Services
                           .BuildServiceProvider()
                           .GetRequiredService<IMongoHelper>();
 

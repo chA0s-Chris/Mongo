@@ -28,6 +28,7 @@ public class MongoHelperIntegrationTests
                               options.DefaultDatabase = "BasicInsertingTestDb";
                               options.AddMapping<TestDocument>("TestDocuments");
                           })
+                          .Services
                           .BuildServiceProvider()
                           .GetRequiredService<IMongoHelper>();
 

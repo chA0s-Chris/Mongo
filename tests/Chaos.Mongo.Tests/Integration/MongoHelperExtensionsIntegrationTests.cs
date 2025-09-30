@@ -27,6 +27,7 @@ public class MongoHelperExtensionsIntegrationTests
                           options.DefaultDatabase = "AcquireLockTestDb";
                           options.HolderId = "holder-1";
                       })
+                      .Services
                       .BuildServiceProvider()
                       .GetRequiredService<IMongoHelper>();
 
@@ -36,6 +37,7 @@ public class MongoHelperExtensionsIntegrationTests
                           options.DefaultDatabase = "AcquireLockTestDb";
                           options.HolderId = "holder-2";
                       })
+                      .Services
                       .BuildServiceProvider()
                       .GetRequiredService<IMongoHelper>();
 
@@ -69,6 +71,7 @@ public class MongoHelperExtensionsIntegrationTests
                           {
                               options.DefaultDatabase = "AcquireLockTestDb";
                           })
+                          .Services
                           .BuildServiceProvider()
                           .GetRequiredService<IMongoHelper>();
 
@@ -94,6 +97,7 @@ public class MongoHelperExtensionsIntegrationTests
                           options.DefaultDatabase = "AcquireLockTestDb";
                           options.HolderId = "holder-1";
                       })
+                      .Services
                       .BuildServiceProvider()
                       .GetRequiredService<IMongoHelper>();
 
@@ -103,6 +107,7 @@ public class MongoHelperExtensionsIntegrationTests
                           options.DefaultDatabase = "AcquireLockTestDb";
                           options.HolderId = "holder-2";
                       })
+                      .Services
                       .BuildServiceProvider()
                       .GetRequiredService<IMongoHelper>();
 
@@ -131,6 +136,7 @@ public class MongoHelperExtensionsIntegrationTests
                           {
                               options.DefaultDatabase = "AcquireLockTestDb";
                           })
+                          .Services
                           .BuildServiceProvider()
                           .GetRequiredService<IMongoHelper>();
         var leaseTime = TimeSpan.FromMinutes(15);
@@ -157,6 +163,7 @@ public class MongoHelperExtensionsIntegrationTests
                           options.DefaultDatabase = "AcquireLockTestDb";
                           options.HolderId = "holder-1";
                       })
+                      .Services
                       .BuildServiceProvider()
                       .GetRequiredService<IMongoHelper>();
 
@@ -166,6 +173,7 @@ public class MongoHelperExtensionsIntegrationTests
                           options.DefaultDatabase = "AcquireLockTestDb";
                           options.HolderId = "holder-2";
                       })
+                      .Services
                       .BuildServiceProvider()
                       .GetRequiredService<IMongoHelper>();
 
@@ -209,6 +217,7 @@ public class MongoHelperExtensionsIntegrationTests
                           {
                               options.DefaultDatabase = "AcquireLockTestDb";
                           })
+                          .Services
                           .BuildServiceProvider()
                           .GetRequiredService<IMongoHelper>();
 
@@ -231,6 +240,7 @@ public class MongoHelperExtensionsIntegrationTests
                               options.AddMapping<TestDocument>("TestDocuments");
                               options.AddMapping<Counter>("Counters");
                           })
+                          .Services
                           .BuildServiceProvider()
                           .GetRequiredService<IMongoHelper>();
 
@@ -304,6 +314,7 @@ public class MongoHelperExtensionsIntegrationTests
                               options.DefaultDatabase = "ExecuteInTransactionDb";
                               options.AddMapping<TestDocument>("TestDocuments");
                           })
+                          .Services
                           .BuildServiceProvider()
                           .GetRequiredService<IMongoHelper>();
 

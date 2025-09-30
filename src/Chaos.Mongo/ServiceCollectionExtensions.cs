@@ -19,8 +19,8 @@ public static class ServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The service collection to add MongoDB services to.</param>
     /// <param name="configure">Optional action to configure <see cref="MongoOptions"/>.</param>
-    /// <returns>The service collection for method chaining.</returns>
-    public static IServiceCollection AddMongo(this IServiceCollection services, Action<MongoOptions>? configure = null)
+    /// <returns>A <see cref="MongoBuilder"/> for configuring MongoDB services.</returns>
+    public static MongoBuilder AddMongo(this IServiceCollection services, Action<MongoOptions>? configure = null)
     {
         var builder = services.AddOptions<MongoOptions>();
 
@@ -38,10 +38,10 @@ public static class ServiceCollectionExtensions
     /// <param name="services">The service collection to add MongoDB services to.</param>
     /// <param name="configuration">The configuration instance containing MongoDB settings.</param>
     /// <param name="sectionName">The name of the configuration section containing MongoDB options.</param>
-    /// <returns>The service collection for method chaining.</returns>
+    /// <returns>A <see cref="MongoBuilder"/> for configuring MongoDB services.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="configuration"/> is null.</exception>
     /// <exception cref="ArgumentException">Thrown when <paramref name="sectionName"/> is null or whitespace.</exception>
-    public static IServiceCollection AddMongo(this IServiceCollection services, IConfiguration configuration, String sectionName)
+    public static MongoBuilder AddMongo(this IServiceCollection services, IConfiguration configuration, String sectionName)
     {
         ArgumentNullException.ThrowIfNull(configuration);
         ArgumentException.ThrowIfNullOrWhiteSpace(sectionName);
@@ -60,9 +60,9 @@ public static class ServiceCollectionExtensions
     /// <param name="connectionString">The MongoDB connection string.</param>
     /// <param name="databaseName">Optional database name to use. If not specified, the database name from the connection string is used.</param>
     /// <param name="configure">Optional action to configure additional <see cref="MongoOptions"/>.</param>
-    /// <returns>The service collection for method chaining.</returns>
+    /// <returns>A <see cref="MongoBuilder"/> for configuring MongoDB services.</returns>
     /// <exception cref="ArgumentException">Thrown when <paramref name="connectionString"/> is null or whitespace.</exception>
-    public static IServiceCollection AddMongo(this IServiceCollection services, String connectionString, String? databaseName = null, Action<MongoOptions>? configure = null)
+    public static MongoBuilder AddMongo(this IServiceCollection services, String connectionString, String? databaseName = null, Action<MongoOptions>? configure = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(connectionString);
 
@@ -81,9 +81,9 @@ public static class ServiceCollectionExtensions
     /// <param name="url">The MongoDB URL.</param>
     /// <param name="databaseName">Optional database name to use. If not specified, the database name from the URL is used.</param>
     /// <param name="configure">Optional action to configure additional <see cref="MongoOptions"/>.</param>
-    /// <returns>The service collection for method chaining.</returns>
+    /// <returns>A <see cref="MongoBuilder"/> for configuring MongoDB services.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="url"/> is null.</exception>
-    public static IServiceCollection AddMongo(this IServiceCollection services, MongoUrl url, String? databaseName = null, Action<MongoOptions>? configure = null)
+    public static MongoBuilder AddMongo(this IServiceCollection services, MongoUrl url, String? databaseName = null, Action<MongoOptions>? configure = null)
     {
         ArgumentNullException.ThrowIfNull(url);
 
@@ -95,20 +95,7 @@ public static class ServiceCollectionExtensions
         });
     }
 
-    /// <summary>
-    /// Registers a Mongo configurator.
-    /// </summary>
-    /// <typeparam name="T">The type of the Mongo configurator.</typeparam>
-    /// <param name="services">The service collection to add the Mongo configurator to.</param>
-    /// <returns>The service collection for method chaining.</returns>
-    public static IServiceCollection AddMongoConfigurator<T>(this IServiceCollection services)
-        where T : class, IMongoConfigurator
-    {
-        services.AddTransient<IMongoConfigurator, T>();
-        return services;
-    }
-
-    private static IServiceCollection AddMongoInternal(this IServiceCollection services, OptionsBuilder<MongoOptions> builder)
+    private static MongoBuilder AddMongoInternal(this IServiceCollection services, OptionsBuilder<MongoOptions> builder)
     {
         services.AddSingleton<IValidateOptions<MongoOptions>, MongoOptionsValidation>();
         builder.ValidateOnStart();
@@ -130,6 +117,6 @@ public static class ServiceCollectionExtensions
 
         services.AddTransient<IMongoConfiguratorRunner, MongoConfiguratorRunner>();
 
-        return services;
+        return new(services);
     }
 }
