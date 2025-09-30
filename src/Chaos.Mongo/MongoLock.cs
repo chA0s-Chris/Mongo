@@ -14,17 +14,17 @@ public class MongoLock : IMongoLock
     /// Initializes a new instance of the <see cref="MongoLock"/> class.
     /// </summary>
     /// <param name="id">The unique identifier of the lock.</param>
-    /// <param name="validUntil">The UTC date and time when the lock will automatically expire.</param>
+    /// <param name="validUntilUtc">The UTC date and time when the lock will automatically expire.</param>
     /// <param name="releaseAction">The action to execute when the lock is released.</param>
     /// <exception cref="ArgumentException">Thrown when <paramref name="id"/> is null or whitespace.</exception>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="releaseAction"/> is null.</exception>
-    public MongoLock(String id, DateTime validUntil, Func<Task> releaseAction)
+    public MongoLock(String id, DateTime validUntilUtc, Func<Task> releaseAction)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         ArgumentNullException.ThrowIfNull(releaseAction);
 
         Id = id;
-        ValidUntil = validUntil;
+        ValidUntilUtc = validUntilUtc;
         _releaseAction = releaseAction;
     }
 
@@ -32,7 +32,10 @@ public class MongoLock : IMongoLock
     public String Id { get; }
 
     /// <inheritdoc/>
-    public DateTime ValidUntil { get; }
+    public Boolean IsValid => !_disposed && ValidUntilUtc > DateTime.UtcNow;
+
+    /// <inheritdoc/>
+    public DateTime ValidUntilUtc { get; }
 
     /// <inheritdoc/>
     public async ValueTask DisposeAsync()

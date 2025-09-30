@@ -62,7 +62,7 @@ public class MongoLockTests
 
         // Assert
         mongoLock.Id.Should().Be(lockId);
-        mongoLock.ValidUntil.Should().Be(validUntil);
+        mongoLock.ValidUntilUtc.Should().Be(validUntil);
     }
 
     [Test]
@@ -150,5 +150,68 @@ public class MongoLockTests
 
         // Assert
         releaseCompleted.Should().BeTrue();
+    }
+
+    [Test]
+    public async Task IsValid_AfterDisposal_ShouldReturnFalse()
+    {
+        // Arrange
+        var mongoLock = new MongoLock("test-lock", DateTime.UtcNow.AddMinutes(5), () => Task.CompletedTask);
+        mongoLock.IsValid.Should().BeTrue();
+
+        // Act
+        await mongoLock.DisposeAsync();
+
+        // Assert
+        mongoLock.IsValid.Should().BeFalse();
+    }
+
+    [Test]
+    public async Task IsValid_AfterMultipleDisposals_ShouldRemainFalse()
+    {
+        // Arrange
+        var mongoLock = new MongoLock("test-lock", DateTime.UtcNow.AddMinutes(5), () => Task.CompletedTask);
+
+        // Act
+        await mongoLock.DisposeAsync();
+        await mongoLock.DisposeAsync();
+        await mongoLock.DisposeAsync();
+
+        // Assert
+        mongoLock.IsValid.Should().BeFalse();
+    }
+
+    [Test]
+    public async Task IsValid_WhenExpiringDuringTest_ShouldTransitionToFalse()
+    {
+        // Arrange
+        var mongoLock = new MongoLock("test-lock", DateTime.UtcNow.AddMilliseconds(100), () => Task.CompletedTask);
+        mongoLock.IsValid.Should().BeTrue();
+
+        // Act - Wait for expiration
+        await Task.Delay(150);
+
+        // Assert
+        mongoLock.IsValid.Should().BeFalse();
+    }
+
+    [Test]
+    public void IsValid_WhenLockHasExpired_ShouldReturnFalse()
+    {
+        // Arrange
+        var mongoLock = new MongoLock("test-lock", DateTime.UtcNow.AddMilliseconds(-100), () => Task.CompletedTask);
+
+        // Act & Assert
+        mongoLock.IsValid.Should().BeFalse();
+    }
+
+    [Test]
+    public void IsValid_WhenLockIsNotExpiredAndNotDisposed_ShouldReturnTrue()
+    {
+        // Arrange
+        var mongoLock = new MongoLock("test-lock", DateTime.UtcNow.AddMinutes(5), () => Task.CompletedTask);
+
+        // Act & Assert
+        mongoLock.IsValid.Should().BeTrue();
     }
 }

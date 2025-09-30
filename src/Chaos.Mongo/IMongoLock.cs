@@ -16,7 +16,12 @@ public interface IMongoLock : IAsyncDisposable
     String Id { get; }
 
     /// <summary>
+    /// Gets a value indicating whether the lock is still valid.
+    /// </summary>
+    Boolean IsValid { get; }
+
+    /// <summary>
     /// Gets the UTC date and time when the lock will automatically expire.
     /// </summary>
-    DateTime ValidUntil { get; }
+    DateTime ValidUntilUtc { get; }
 }

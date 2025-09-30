@@ -78,7 +78,7 @@ public class MongoHelperExtensionsIntegrationTests
         // Assert
         lockInstance.Should().NotBeNull();
         lockInstance.Id.Should().Be("available-lock");
-        lockInstance.ValidUntil.Should().BeAfter(DateTime.UtcNow);
+        lockInstance.ValidUntilUtc.Should().BeAfter(DateTime.UtcNow);
     }
 
     [Test]
@@ -141,7 +141,7 @@ public class MongoHelperExtensionsIntegrationTests
 
         // Assert
         lockInstance.Should().NotBeNull();
-        lockInstance.ValidUntil.Should().BeCloseTo(beforeAcquire.Add(leaseTime), TimeSpan.FromSeconds(2));
+        lockInstance.ValidUntilUtc.Should().BeCloseTo(beforeAcquire.Add(leaseTime), TimeSpan.FromSeconds(2));
     }
 
     [Test]

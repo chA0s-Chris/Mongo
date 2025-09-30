@@ -174,7 +174,7 @@ public class MongoHelperLockIntegrationTests
         // Assert
         lockInstance.Should().NotBeNull();
         lockInstance.Id.Should().Be("test-lock");
-        lockInstance.ValidUntil.Should().BeAfter(DateTime.UtcNow);
+        lockInstance.ValidUntilUtc.Should().BeAfter(DateTime.UtcNow);
     }
 
     [Test]
@@ -283,7 +283,7 @@ public class MongoHelperLockIntegrationTests
 
         // Assert
         lockInstance.Should().NotBeNull();
-        lockInstance.ValidUntil.Should().BeCloseTo(beforeAcquire.Add(leaseTime), TimeSpan.FromSeconds(2));
+        lockInstance.ValidUntilUtc.Should().BeCloseTo(beforeAcquire.Add(leaseTime), TimeSpan.FromSeconds(2));
     }
 
     [Test]
