@@ -25,7 +25,7 @@ public class MongoLockExtensionsTests
     }
 
     [Test]
-    public async Task EnsureValid_BeforeAndAfterExpiration_ShouldTransitionBehavior()
+    public void EnsureValid_BeforeAndAfterExpiration_ShouldTransitionBehavior()
     {
         // Arrange
         var timeProvider = new FakeTimeProvider();
