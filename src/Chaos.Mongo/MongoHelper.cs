@@ -25,36 +25,6 @@ public sealed class MongoHelper : IMongoHelper
     public IMongoDatabase Database { get; }
 
     /// <inheritdoc/>
-    public async Task<T> ExecuteInTransaction<T>(Func<IMongoHelper, IClientSessionHandle, CancellationToken, Task<T>> callback,
-                                                 TransactionOptions? transactionOptions = null,
-                                                 CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(callback);
-
-        using var session = await Client.StartSessionAsync(cancellationToken: cancellationToken);
-        return await session.WithTransactionAsync(async (sessionHandle, token) => await callback.Invoke(this, sessionHandle, token),
-                                                  transactionOptions,
-                                                  cancellationToken);
-    }
-
-    /// <inheritdoc/>
-    public async Task ExecuteInTransaction(Func<IMongoHelper, IClientSessionHandle, CancellationToken, Task> callback,
-                                           TransactionOptions? transactionOptions = null,
-                                           CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(callback);
-
-        using var session = await Client.StartSessionAsync(cancellationToken: cancellationToken);
-        await session.WithTransactionAsync<Object?>(async (sessionHandle, token) =>
-                                                    {
-                                                        await callback.Invoke(this, sessionHandle, token);
-                                                        return null;
-                                                    },
-                                                    transactionOptions,
-                                                    cancellationToken);
-    }
-
-    /// <inheritdoc/>
     public IMongoCollection<T> GetCollection<T>(MongoCollectionSettings? settings = null)
     {
         var collectionName = _collectionTypeMap.GetCollectionName<T>();
