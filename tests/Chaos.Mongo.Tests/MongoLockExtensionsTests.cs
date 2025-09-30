@@ -3,6 +3,7 @@
 namespace Chaos.Mongo.Tests;
 
 using FluentAssertions;
+using Microsoft.Extensions.Time.Testing;
 using NUnit.Framework;
 
 public class MongoLockExtensionsTests
@@ -11,7 +12,8 @@ public class MongoLockExtensionsTests
     public async Task EnsureValid_AfterDisposal_ShouldThrowInvalidOperationException()
     {
         // Arrange
-        var mongoLock = new MongoLock("disposed-lock", DateTime.UtcNow.AddMinutes(5), () => Task.CompletedTask);
+        var timeProvider = new FakeTimeProvider();
+        var mongoLock = new MongoLock("disposed-lock", timeProvider.GetUtcNow().AddMinutes(5).UtcDateTime, timeProvider, () => Task.CompletedTask);
         await mongoLock.DisposeAsync();
 
         // Act
@@ -26,13 +28,14 @@ public class MongoLockExtensionsTests
     public async Task EnsureValid_BeforeAndAfterExpiration_ShouldTransitionBehavior()
     {
         // Arrange
-        var mongoLock = new MongoLock("transition-lock", DateTime.UtcNow.AddMilliseconds(100), () => Task.CompletedTask);
+        var timeProvider = new FakeTimeProvider();
+        var mongoLock = new MongoLock("transition-lock", timeProvider.GetUtcNow().AddMilliseconds(100).UtcDateTime, timeProvider, () => Task.CompletedTask);
 
         // Act & Assert - Valid before expiration
         mongoLock.EnsureValid().Should().BeSameAs(mongoLock);
 
         // Wait for expiration
-        await Task.Delay(150);
+        timeProvider.Advance(TimeSpan.FromMilliseconds(150));
 
         // Act & Assert - Invalid after expiration
         var act = () => mongoLock.EnsureValid();
@@ -43,8 +46,9 @@ public class MongoLockExtensionsTests
     public void EnsureValid_MultipleLocksWithDifferentStates_ShouldValidateIndependently()
     {
         // Arrange
-        var validLock = new MongoLock("valid-lock", DateTime.UtcNow.AddMinutes(5), () => Task.CompletedTask);
-        var expiredLock = new MongoLock("expired-lock", DateTime.UtcNow.AddMilliseconds(-100), () => Task.CompletedTask);
+        var timeProvider = new FakeTimeProvider();
+        var validLock = new MongoLock("valid-lock", timeProvider.GetUtcNow().AddMinutes(5).UtcDateTime, timeProvider, () => Task.CompletedTask);
+        var expiredLock = new MongoLock("expired-lock", timeProvider.GetUtcNow().AddMilliseconds(-100).UtcDateTime, timeProvider, () => Task.CompletedTask);
 
         // Act & Assert
         validLock.EnsureValid().Should().BeSameAs(validLock);
@@ -56,7 +60,8 @@ public class MongoLockExtensionsTests
     public void EnsureValid_WithExpiredLock_ShouldThrowInvalidOperationException()
     {
         // Arrange
-        var mongoLock = new MongoLock("expired-lock", DateTime.UtcNow.AddMilliseconds(-100), () => Task.CompletedTask);
+        var timeProvider = new FakeTimeProvider();
+        var mongoLock = new MongoLock("expired-lock", timeProvider.GetUtcNow().AddMilliseconds(-100).UtcDateTime, timeProvider, () => Task.CompletedTask);
 
         // Act
         var act = () => mongoLock.EnsureValid();
@@ -70,7 +75,8 @@ public class MongoLockExtensionsTests
     public void EnsureValid_WithFluentStyle_ShouldAllowChaining()
     {
         // Arrange
-        var mongoLock = new MongoLock("fluent-lock", DateTime.UtcNow.AddMinutes(5), () => Task.CompletedTask);
+        var timeProvider = new FakeTimeProvider();
+        var mongoLock = new MongoLock("fluent-lock", timeProvider.GetUtcNow().AddMinutes(5).UtcDateTime, timeProvider, () => Task.CompletedTask);
 
         // Act
         var result = mongoLock.EnsureValid().EnsureValid().EnsureValid();
@@ -97,7 +103,8 @@ public class MongoLockExtensionsTests
     public void EnsureValid_WithValidLock_ShouldReturnLock()
     {
         // Arrange
-        var mongoLock = new MongoLock("test-lock", DateTime.UtcNow.AddMinutes(5), () => Task.CompletedTask);
+        var timeProvider = new FakeTimeProvider();
+        var mongoLock = new MongoLock("test-lock", timeProvider.GetUtcNow().AddMinutes(5).UtcDateTime, timeProvider, () => Task.CompletedTask);
 
         // Act
         var result = mongoLock.EnsureValid();

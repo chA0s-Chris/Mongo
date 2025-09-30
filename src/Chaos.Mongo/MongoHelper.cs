@@ -13,21 +13,26 @@ public sealed class MongoHelper : IMongoHelper
     private readonly ICollectionTypeMap _collectionTypeMap;
     private readonly String _holderId;
     private readonly String _lockCollectionName;
+    private readonly TimeProvider _timeProvider;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MongoHelper"/> class.
     /// </summary>
     /// <param name="connection">The MongoDB connection instance.</param>
     /// <param name="collectionTypeMap">The collection type map for resolving collection names.</param>
+    /// <param name="timeProvider">The time provider for getting current time.</param>
     /// <param name="options">Optional MongoDB configuration options.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="connection"/> or <paramref name="collectionTypeMap"/> is null.</exception>
     public MongoHelper(IMongoConnection connection,
                        ICollectionTypeMap collectionTypeMap,
+                       TimeProvider timeProvider,
                        IOptions<MongoOptions>? options)
     {
         ArgumentNullException.ThrowIfNull(connection);
         ArgumentNullException.ThrowIfNull(collectionTypeMap);
+        ArgumentNullException.ThrowIfNull(timeProvider);
         _collectionTypeMap = collectionTypeMap;
+        _timeProvider = timeProvider;
 
         Client = connection.Client;
         Database = connection.Database;
@@ -73,7 +78,7 @@ public sealed class MongoHelper : IMongoHelper
         leaseTime ??= MongoDefaults.LockLeaseTime;
 
         var lockCollection = Database.GetCollection<MongoLockDocument>(_lockCollectionName);
-        var now = DateTime.UtcNow;
+        var now = _timeProvider.GetUtcNow().UtcDateTime;
         var leaseUntil = now.Add(leaseTime.Value);
 
         // Try to atomically take or extend the lock if expired
@@ -97,7 +102,7 @@ public sealed class MongoHelper : IMongoHelper
 
             // Verify we successfully acquired the lock
             if (lockDocument?.Holder == _holderId)
-                return new MongoLock(lockName, leaseUntil, async () => await ReleaseLockAsync(lockName, _holderId));
+                return new MongoLock(lockName, leaseUntil, _timeProvider, async () => await ReleaseLockAsync(lockName, _holderId));
 
             return null;
         }

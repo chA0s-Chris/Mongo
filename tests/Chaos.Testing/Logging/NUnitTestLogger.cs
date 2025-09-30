@@ -1,4 +1,4 @@
-﻿// Copyright (c) 2025 Christian Flessa. All rights reserved.
+// Copyright (c) 2025 Christian Flessa. All rights reserved.
 // This file is licensed under the MIT license. See LICENSE in the project root for more information.
 namespace Chaos.Testing.Logging;
 
@@ -8,10 +8,12 @@ public class NUnitTestLogger<T> : ILogger<T>
 {
     private readonly Boolean _captureMessages;
     private readonly List<LogMessage> _messages = [];
+    private readonly TimeProvider _timeProvider;
 
-    public NUnitTestLogger(Boolean captureMessages = false)
+    public NUnitTestLogger(Boolean captureMessages = false, TimeProvider? timeProvider = null)
     {
         _captureMessages = captureMessages;
+        _timeProvider = timeProvider ?? TimeProvider.System;
     }
 
     public IReadOnlyList<LogMessage> LogMessages => _messages;
@@ -41,7 +43,7 @@ public class NUnitTestLogger<T> : ILogger<T>
 
         if (_captureMessages)
         {
-            var logMessage = new LogMessage(DateTime.UtcNow, logLevel, eventId, state, exception, message);
+            var logMessage = new LogMessage(_timeProvider.GetUtcNow().UtcDateTime, logLevel, eventId, state, exception, message);
             _messages.Add(logMessage);
         }
 
@@ -64,6 +66,6 @@ public class NUnitTestLogger<T> : ILogger<T>
 
 public sealed class NUnitTestLogger : NUnitTestLogger<NUnitTestLogger>
 {
-    public NUnitTestLogger(Boolean captureMessages = false)
-        : base(captureMessages) { }
+    public NUnitTestLogger(Boolean captureMessages = false, TimeProvider? timeProvider = null)
+        : base(captureMessages, timeProvider) { }
 }

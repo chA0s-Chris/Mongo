@@ -8,6 +8,7 @@ namespace Chaos.Mongo;
 public class MongoLock : IMongoLock
 {
     private readonly Func<Task> _releaseAction;
+    private readonly TimeProvider _timeProvider;
     private Boolean _disposed;
 
     /// <summary>
@@ -15,16 +16,19 @@ public class MongoLock : IMongoLock
     /// </summary>
     /// <param name="id">The unique identifier of the lock.</param>
     /// <param name="validUntilUtc">The UTC date and time when the lock will automatically expire.</param>
+    /// <param name="timeProvider">The time provider for getting current time.</param>
     /// <param name="releaseAction">The action to execute when the lock is released.</param>
     /// <exception cref="ArgumentException">Thrown when <paramref name="id"/> is null or whitespace.</exception>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="releaseAction"/> is null.</exception>
-    public MongoLock(String id, DateTime validUntilUtc, Func<Task> releaseAction)
+    public MongoLock(String id, DateTime validUntilUtc, TimeProvider timeProvider, Func<Task> releaseAction)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
+        ArgumentNullException.ThrowIfNull(timeProvider);
         ArgumentNullException.ThrowIfNull(releaseAction);
 
         Id = id;
         ValidUntilUtc = validUntilUtc;
+        _timeProvider = timeProvider;
         _releaseAction = releaseAction;
     }
 
@@ -32,7 +36,7 @@ public class MongoLock : IMongoLock
     public String Id { get; }
 
     /// <inheritdoc/>
-    public Boolean IsValid => !_disposed && ValidUntilUtc > DateTime.UtcNow;
+    public Boolean IsValid => !_disposed && ValidUntilUtc > _timeProvider.GetUtcNow().UtcDateTime;
 
     /// <inheritdoc/>
     public DateTime ValidUntilUtc { get; }

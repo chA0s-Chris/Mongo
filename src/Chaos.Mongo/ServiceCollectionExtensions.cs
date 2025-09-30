@@ -113,6 +113,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IValidateOptions<MongoOptions>, MongoOptionsValidation>();
         builder.ValidateOnStart();
 
+        services.TryAddSingleton(TimeProvider.System);
         services.TryAddSingleton<IMongoClientSettingsFactory, MongoClientSettingsFactory>();
         services.TryAddSingleton<IMongoConnectionFactory, MongoConnectionFactory>();
         services.AddSingleton<IMongoConnection>(serviceProvider =>
