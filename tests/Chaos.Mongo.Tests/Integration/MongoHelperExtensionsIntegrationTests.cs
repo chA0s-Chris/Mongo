@@ -15,6 +15,211 @@ public class MongoHelperExtensionsIntegrationTests
     private MongoDbContainer _container;
 
     [Test]
+    public async Task AcquireLockAsync_WhenLockBecomesAvailable_ShouldRetryAndAcquire()
+    {
+        // Arrange
+        var url = MongoUrl.Create(_container.GetConnectionString());
+        var uniqueLockName = $"retry-lock-{Guid.NewGuid()}";
+
+        var helper1 = new ServiceCollection()
+                      .AddMongo(url, configure: options =>
+                      {
+                          options.DefaultDatabase = "AcquireLockTestDb";
+                          options.HolderId = "holder-1";
+                      })
+                      .BuildServiceProvider()
+                      .GetRequiredService<IMongoHelper>();
+
+        var helper2 = new ServiceCollection()
+                      .AddMongo(url, configure: options =>
+                      {
+                          options.DefaultDatabase = "AcquireLockTestDb";
+                          options.HolderId = "holder-2";
+                      })
+                      .BuildServiceProvider()
+                      .GetRequiredService<IMongoHelper>();
+
+        // Acquire lock with helper1 and release it after a short delay
+        var lock1 = await helper1.AcquireLockAsync(uniqueLockName, TimeSpan.FromMinutes(5));
+
+        // Start helper2's acquisition attempt in background (will retry)
+        var acquireTask = Task.Run(async () => await helper2.AcquireLockAsync(uniqueLockName, retryDelay: TimeSpan.FromMilliseconds(50)));
+
+        // Wait a bit to ensure helper2 is retrying
+        await Task.Delay(200);
+
+        // Release lock1
+        await lock1.DisposeAsync();
+
+        // Act - helper2 should eventually acquire the lock
+        await using var lock2 = await acquireTask;
+
+        // Assert
+        lock2.Should().NotBeNull();
+        lock2.Id.Should().Be(uniqueLockName);
+    }
+
+    [Test]
+    public async Task AcquireLockAsync_WhenLockIsAvailable_ShouldAcquireLock()
+    {
+        // Arrange
+        var url = MongoUrl.Create(_container.GetConnectionString());
+        var mongoHelper = new ServiceCollection()
+                          .AddMongo(url, configure: options =>
+                          {
+                              options.DefaultDatabase = "AcquireLockTestDb";
+                          })
+                          .BuildServiceProvider()
+                          .GetRequiredService<IMongoHelper>();
+
+        // Act
+        await using var lockInstance = await mongoHelper.AcquireLockAsync("available-lock");
+
+        // Assert
+        lockInstance.Should().NotBeNull();
+        lockInstance.Id.Should().Be("available-lock");
+        lockInstance.ValidUntil.Should().BeAfter(DateTime.UtcNow);
+    }
+
+    [Test]
+    public async Task AcquireLockAsync_WithCancellationDuringRetry_ShouldThrowOperationCanceledException()
+    {
+        // Arrange
+        var url = MongoUrl.Create(_container.GetConnectionString());
+        var uniqueLockName = $"cancel-retry-lock-{Guid.NewGuid()}";
+
+        var helper1 = new ServiceCollection()
+                      .AddMongo(url, configure: options =>
+                      {
+                          options.DefaultDatabase = "AcquireLockTestDb";
+                          options.HolderId = "holder-1";
+                      })
+                      .BuildServiceProvider()
+                      .GetRequiredService<IMongoHelper>();
+
+        var helper2 = new ServiceCollection()
+                      .AddMongo(url, configure: options =>
+                      {
+                          options.DefaultDatabase = "AcquireLockTestDb";
+                          options.HolderId = "holder-2";
+                      })
+                      .BuildServiceProvider()
+                      .GetRequiredService<IMongoHelper>();
+
+        await using var lock1 = await helper1.AcquireLockAsync(uniqueLockName);
+
+        using var cts = new CancellationTokenSource();
+        cts.CancelAfter(TimeSpan.FromMilliseconds(200));
+
+        // Act - helper2 tries to acquire but should be cancelled during retry
+        var act = async () => await helper2.AcquireLockAsync(
+            uniqueLockName,
+            retryDelay: TimeSpan.FromMilliseconds(50),
+            cancellationToken: cts.Token);
+
+        // Assert
+        await act.Should().ThrowAsync<OperationCanceledException>();
+    }
+
+    [Test]
+    public async Task AcquireLockAsync_WithCustomLeaseTime_ShouldSetCorrectExpiry()
+    {
+        // Arrange
+        var url = MongoUrl.Create(_container.GetConnectionString());
+        var mongoHelper = new ServiceCollection()
+                          .AddMongo(url, configure: options =>
+                          {
+                              options.DefaultDatabase = "AcquireLockTestDb";
+                          })
+                          .BuildServiceProvider()
+                          .GetRequiredService<IMongoHelper>();
+        var leaseTime = TimeSpan.FromMinutes(15);
+        var beforeAcquire = DateTime.UtcNow;
+
+        // Act
+        await using var lockInstance = await mongoHelper.AcquireLockAsync("custom-lease", leaseTime);
+
+        // Assert
+        lockInstance.Should().NotBeNull();
+        lockInstance.ValidUntil.Should().BeCloseTo(beforeAcquire.Add(leaseTime), TimeSpan.FromSeconds(2));
+    }
+
+    [Test]
+    public async Task AcquireLockAsync_WithCustomRetryDelay_ShouldUseSpecifiedDelay()
+    {
+        // Arrange
+        var url = MongoUrl.Create(_container.GetConnectionString());
+        var uniqueLockName = $"custom-delay-lock-{Guid.NewGuid()}";
+
+        var helper1 = new ServiceCollection()
+                      .AddMongo(url, configure: options =>
+                      {
+                          options.DefaultDatabase = "AcquireLockTestDb";
+                          options.HolderId = "holder-1";
+                      })
+                      .BuildServiceProvider()
+                      .GetRequiredService<IMongoHelper>();
+
+        var helper2 = new ServiceCollection()
+                      .AddMongo(url, configure: options =>
+                      {
+                          options.DefaultDatabase = "AcquireLockTestDb";
+                          options.HolderId = "holder-2";
+                      })
+                      .BuildServiceProvider()
+                      .GetRequiredService<IMongoHelper>();
+
+        await using var lock1 = await helper1.AcquireLockAsync(uniqueLockName);
+
+        var startTime = DateTime.UtcNow;
+        var customDelay = TimeSpan.FromMilliseconds(300);
+
+        // Start acquisition in background with custom delay
+        var acquireTask = Task.Run(async () =>
+        {
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+            try
+            {
+                await helper2.AcquireLockAsync(uniqueLockName, retryDelay: customDelay, cancellationToken: cts.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                // Expected - lock won't be released
+            }
+        });
+
+        // Wait for a couple of retry attempts
+        await Task.Delay(700);
+
+        var elapsed = DateTime.UtcNow - startTime;
+
+        // Assert - should have waited at least 2 retry delays (2 * 300ms = 600ms)
+        elapsed.Should().BeGreaterOrEqualTo(TimeSpan.FromMilliseconds(600));
+
+        await acquireTask;
+    }
+
+    [Test]
+    public async Task AcquireLockAsync_WithNullLockName_ShouldThrowArgumentException()
+    {
+        // Arrange
+        var url = MongoUrl.Create(_container.GetConnectionString());
+        var mongoHelper = new ServiceCollection()
+                          .AddMongo(url, configure: options =>
+                          {
+                              options.DefaultDatabase = "AcquireLockTestDb";
+                          })
+                          .BuildServiceProvider()
+                          .GetRequiredService<IMongoHelper>();
+
+        // Act
+        var act = async () => await mongoHelper.AcquireLockAsync(null!);
+
+        // Assert
+        await act.Should().ThrowAsync<ArgumentException>();
+    }
+
+    [Test]
     public async Task ExecuteInTransaction_ShouldRetryOnTransientErrorAndEventuallyCommitChanges()
     {
         var url = MongoUrl.Create(_container.GetConnectionString());
