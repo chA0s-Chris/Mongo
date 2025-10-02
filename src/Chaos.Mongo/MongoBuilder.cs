@@ -3,6 +3,7 @@
 namespace Chaos.Mongo;
 
 using Chaos.Mongo.Configuration;
+using Chaos.Mongo.Queues;
 using Chaos.Mongo.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Immutable;
@@ -86,6 +87,19 @@ public class MongoBuilder
         }
 
         DiscoveredConfigurators = [..DiscoveredConfigurators, ..implementationTypes];
+        return this;
+    }
+
+    public MongoBuilder WithQueue<TPayload>(Action<MongoQueueBuilder<TPayload>> configure)
+        where TPayload : class, new()
+    {
+        ArgumentNullException.ThrowIfNull(configure);
+
+        _services.AddMongoQueue();
+
+        var queueBuilder = new MongoQueueBuilder<TPayload>(_services);
+        configure.Invoke(queueBuilder);
+
         return this;
     }
 }
