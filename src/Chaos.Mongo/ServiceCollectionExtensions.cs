@@ -3,6 +3,7 @@
 namespace Chaos.Mongo;
 
 using Chaos.Mongo.Configuration;
+using Chaos.Mongo.Queues;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -93,6 +94,12 @@ public static class ServiceCollectionExtensions
             options.DefaultDatabase = databaseName;
             configure?.Invoke(options);
         });
+    }
+
+    internal static IServiceCollection AddMongoQueue(this IServiceCollection services)
+    {
+        services.TryAddSingleton<IMongoQueueCollectionNameGenerator, MongoQueueCollectionNameGenerator>();
+        return services;
     }
 
     private static MongoBuilder AddMongoInternal(this IServiceCollection services, OptionsBuilder<MongoOptions> builder)
