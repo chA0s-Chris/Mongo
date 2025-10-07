@@ -105,10 +105,10 @@ public class MongoQueueCollectionNameGeneratorTests
 
     private static class NestedContainer
     {
-        public class NestedPayload { }
+        public class NestedPayload;
     }
 
-    private class AnotherTestPayload { }
+    private class AnotherTestPayload;
 
-    private class TestPayload { }
+    private class TestPayload;
 }
