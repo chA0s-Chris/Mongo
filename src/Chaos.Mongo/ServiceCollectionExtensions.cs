@@ -99,6 +99,10 @@ public static class ServiceCollectionExtensions
     internal static IServiceCollection AddMongoQueue(this IServiceCollection services)
     {
         services.TryAddSingleton<IMongoQueueCollectionNameGenerator, MongoQueueCollectionNameGenerator>();
+        services.TryAddSingleton<IMongoQueuePayloadHandlerFactory, MongoQueuePayloadHandlerFactory>();
+        services.TryAddSingleton<IMongoQueuePayloadPrioritizer, MongoQueuePayloadPrioritizer>();
+        services.TryAddSingleton<IMongoQueueSubscriptionFactory, MongoQueueSubscriptionFactory>();
+        services.TryAddSingleton<IMongoQueuePublisher, MongoQueuePublisher>();
         return services;
     }
 

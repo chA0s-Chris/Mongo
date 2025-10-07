@@ -7,10 +7,14 @@ namespace Chaos.Mongo;
 /// </summary>
 public static class MongoDefaults
 {
+    public const Boolean AutoStartSubscription = false;
+
     /// <summary>
     /// The default name of the collection used to store distributed locks.
     /// </summary>
     public const String LockCollectionName = "_locks";
+
+    public const Int32 QueryLimit = 1;
 
     /// <summary>
     /// The default value indicating whether to use CLR type names as collection names when no mapping is found.

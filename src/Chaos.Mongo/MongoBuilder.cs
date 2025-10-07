@@ -95,10 +95,16 @@ public class MongoBuilder
     {
         ArgumentNullException.ThrowIfNull(configure);
 
+        if (_services.Any(s => s.ServiceType == typeof(IMongoQueue<TPayload>)))
+        {
+            throw new InvalidOperationException($"A registration for a MongoDB queue with payload {typeof(TPayload).Name} already exists.");
+        }
+
         _services.AddMongoQueue();
 
         var queueBuilder = new MongoQueueBuilder<TPayload>(_services);
         configure.Invoke(queueBuilder);
+        queueBuilder.RegisterQueue();
 
         return this;
     }

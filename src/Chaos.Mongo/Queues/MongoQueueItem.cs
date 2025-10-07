@@ -8,9 +8,34 @@ using MongoDB.Bson.Serialization.Attributes;
 [BsonIgnoreExtraElements]
 public class MongoQueueItem
 {
+    /// <summary>
+    /// Timestamp the queue item was closed.
+    /// </summary>
+    [BsonIgnoreIfNull]
+    public DateTime? ClosedUtc { get; set; }
+
     public required DateTime CreatedUtc { get; init; }
 
     public ObjectId Id { get; init; }
+
+    /// <summary>
+    /// <c>true</c> if queue item is closed.
+    /// </summary>
+    public Boolean IsClosed { get; set; }
+
+    /// <summary>
+    /// <c>true</c> if queue item is locked.
+    /// </summary>
+    /// <remarks>
+    /// Locking is used to guarantee exclusive access.
+    /// </remarks>
+    public Boolean IsLocked { get; set; }
+
+    /// <summary>
+    /// Timestamp the queue item was locked.
+    /// </summary>
+    [BsonIgnoreIfNull]
+    public DateTime? LockedUtc { get; set; }
 }
 
 [BsonIgnoreExtraElements]
