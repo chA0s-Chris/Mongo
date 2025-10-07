@@ -4,5 +4,5 @@ namespace Chaos.Mongo.Queues;
 
 public interface IMongoQueueCollectionNameGenerator
 {
-    Task<String> GenerateQueueCollectionName(Type payloadType);
+    String GenerateQueueCollectionName(Type payloadType);
 }

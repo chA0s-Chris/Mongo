@@ -11,15 +11,15 @@ using System.Text;
 public class MongoQueueCollectionNameGeneratorTests
 {
     [Test]
-    public async Task GenerateQueueCollectionName_CalledMultipleTimes_ReturnsSameResult()
+    public void GenerateQueueCollectionName_CalledMultipleTimes_ReturnsSameResult()
     {
         // Arrange
         var generator = new MongoQueueCollectionNameGenerator();
         var payloadType = typeof(TestPayload);
 
         // Act
-        var result1 = await generator.GenerateQueueCollectionName(payloadType);
-        var result2 = await generator.GenerateQueueCollectionName(payloadType);
+        var result1 = generator.GenerateQueueCollectionName(payloadType);
+        var result2 = generator.GenerateQueueCollectionName(payloadType);
 
         // Assert
         result1.Should().Be(result2);
@@ -32,14 +32,14 @@ public class MongoQueueCollectionNameGeneratorTests
         var generator = new MongoQueueCollectionNameGenerator();
 
         // Act
-        var act = async () => await generator.GenerateQueueCollectionName(null!);
+        var act = () => generator.GenerateQueueCollectionName(null!);
 
         // Assert
-        act.Should().ThrowAsync<ArgumentNullException>();
+        act.Should().Throw<ArgumentNullException>();
     }
 
     [Test]
-    public async Task GenerateQueueCollectionName_WithDifferentTypes_ReturnsDifferentResults()
+    public void GenerateQueueCollectionName_WithDifferentTypes_ReturnsDifferentResults()
     {
         // Arrange
         var generator = new MongoQueueCollectionNameGenerator();
@@ -47,8 +47,8 @@ public class MongoQueueCollectionNameGeneratorTests
         var payloadType2 = typeof(AnotherTestPayload);
 
         // Act
-        var result1 = await generator.GenerateQueueCollectionName(payloadType1);
-        var result2 = await generator.GenerateQueueCollectionName(payloadType2);
+        var result1 = generator.GenerateQueueCollectionName(payloadType1);
+        var result2 = generator.GenerateQueueCollectionName(payloadType2);
 
         // Assert
         result1.Should().NotBe(result2);
@@ -57,14 +57,14 @@ public class MongoQueueCollectionNameGeneratorTests
     }
 
     [Test]
-    public async Task GenerateQueueCollectionName_WithNestedType_IncludesCorrectName()
+    public void GenerateQueueCollectionName_WithNestedType_IncludesCorrectName()
     {
         // Arrange
         var generator = new MongoQueueCollectionNameGenerator();
         var payloadType = typeof(NestedContainer.NestedPayload);
 
         // Act
-        var result = await generator.GenerateQueueCollectionName(payloadType);
+        var result = generator.GenerateQueueCollectionName(payloadType);
 
         // Assert
         result.Should().StartWith("_Queue.");
@@ -72,7 +72,7 @@ public class MongoQueueCollectionNameGeneratorTests
     }
 
     [Test]
-    public async Task GenerateQueueCollectionName_WithValidType_IncludesHashOfFullName()
+    public void GenerateQueueCollectionName_WithValidType_IncludesHashOfFullName()
     {
         // Arrange
         var generator = new MongoQueueCollectionNameGenerator();
@@ -80,7 +80,7 @@ public class MongoQueueCollectionNameGeneratorTests
         var expectedHash = Convert.ToHexString(XxHash3.Hash(Encoding.UTF8.GetBytes(payloadType.FullName!)));
 
         // Act
-        var result = await generator.GenerateQueueCollectionName(payloadType);
+        var result = generator.GenerateQueueCollectionName(payloadType);
 
         // Assert
         result.Should().Contain(expectedHash);
@@ -88,14 +88,14 @@ public class MongoQueueCollectionNameGeneratorTests
     }
 
     [Test]
-    public async Task GenerateQueueCollectionName_WithValidType_ReturnsCorrectFormat()
+    public void GenerateQueueCollectionName_WithValidType_ReturnsCorrectFormat()
     {
         // Arrange
         var generator = new MongoQueueCollectionNameGenerator();
         var payloadType = typeof(TestPayload);
 
         // Act
-        var result = await generator.GenerateQueueCollectionName(payloadType);
+        var result = generator.GenerateQueueCollectionName(payloadType);
 
         // Assert
         result.Should().StartWith("_Queue.");

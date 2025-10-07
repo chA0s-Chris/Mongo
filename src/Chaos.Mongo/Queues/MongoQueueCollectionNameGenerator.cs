@@ -9,7 +9,7 @@ public class MongoQueueCollectionNameGenerator : IMongoQueueCollectionNameGenera
 {
     private const String NamePrefix = "_Queue.";
 
-    public Task<String> GenerateQueueCollectionName(Type payloadType)
+    public String GenerateQueueCollectionName(Type payloadType)
     {
         ArgumentNullException.ThrowIfNull(payloadType);
 
@@ -26,6 +26,6 @@ public class MongoQueueCollectionNameGenerator : IMongoQueueCollectionNameGenera
 
         builder.Append(payloadType.Name);
 
-        return Task.FromResult(builder.ToString());
+        return builder.ToString();
     }
 }
