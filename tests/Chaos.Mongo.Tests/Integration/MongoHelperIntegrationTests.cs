@@ -25,7 +25,7 @@ public class MongoHelperIntegrationTests
         var mongoHelper = new ServiceCollection()
                           .AddMongo(url, configure: options =>
                           {
-                              options.DefaultDatabase = "BasicInsertingTestDb";
+                              options.DefaultDatabase = $"BasicInsertingTestDb_{Guid.NewGuid():N}";
                               options.AddMapping<TestDocument>("TestDocuments");
                           })
                           .Services

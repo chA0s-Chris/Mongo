@@ -19,12 +19,13 @@ public class MongoHelperExtensionsIntegrationTests
     {
         // Arrange
         var url = MongoUrl.Create(_container.GetConnectionString());
+        var uniqueDbName = $"AcquireLockTestDb_{Guid.NewGuid():N}";
         var uniqueLockName = $"retry-lock-{Guid.NewGuid()}";
 
         var helper1 = new ServiceCollection()
                       .AddMongo(url, configure: options =>
                       {
-                          options.DefaultDatabase = "AcquireLockTestDb";
+                          options.DefaultDatabase = uniqueDbName;
                           options.HolderId = "holder-1";
                       })
                       .Services
@@ -34,7 +35,7 @@ public class MongoHelperExtensionsIntegrationTests
         var helper2 = new ServiceCollection()
                       .AddMongo(url, configure: options =>
                       {
-                          options.DefaultDatabase = "AcquireLockTestDb";
+                          options.DefaultDatabase = uniqueDbName;
                           options.HolderId = "holder-2";
                       })
                       .Services
@@ -66,10 +67,11 @@ public class MongoHelperExtensionsIntegrationTests
     {
         // Arrange
         var url = MongoUrl.Create(_container.GetConnectionString());
+        var uniqueDbName = $"AcquireLockTestDb_{Guid.NewGuid():N}";
         var mongoHelper = new ServiceCollection()
                           .AddMongo(url, configure: options =>
                           {
-                              options.DefaultDatabase = "AcquireLockTestDb";
+                              options.DefaultDatabase = uniqueDbName;
                           })
                           .Services
                           .BuildServiceProvider()
@@ -89,12 +91,13 @@ public class MongoHelperExtensionsIntegrationTests
     {
         // Arrange
         var url = MongoUrl.Create(_container.GetConnectionString());
+        var uniqueDbName = $"AcquireLockTestDb_{Guid.NewGuid():N}";
         var uniqueLockName = $"cancel-retry-lock-{Guid.NewGuid()}";
 
         var helper1 = new ServiceCollection()
                       .AddMongo(url, configure: options =>
                       {
-                          options.DefaultDatabase = "AcquireLockTestDb";
+                          options.DefaultDatabase = uniqueDbName;
                           options.HolderId = "holder-1";
                       })
                       .Services
@@ -104,7 +107,7 @@ public class MongoHelperExtensionsIntegrationTests
         var helper2 = new ServiceCollection()
                       .AddMongo(url, configure: options =>
                       {
-                          options.DefaultDatabase = "AcquireLockTestDb";
+                          options.DefaultDatabase = uniqueDbName;
                           options.HolderId = "holder-2";
                       })
                       .Services
@@ -131,10 +134,11 @@ public class MongoHelperExtensionsIntegrationTests
     {
         // Arrange
         var url = MongoUrl.Create(_container.GetConnectionString());
+        var uniqueDbName = $"AcquireLockTestDb_{Guid.NewGuid():N}";
         var mongoHelper = new ServiceCollection()
                           .AddMongo(url, configure: options =>
                           {
-                              options.DefaultDatabase = "AcquireLockTestDb";
+                              options.DefaultDatabase = uniqueDbName;
                           })
                           .Services
                           .BuildServiceProvider()
@@ -155,12 +159,13 @@ public class MongoHelperExtensionsIntegrationTests
     {
         // Arrange
         var url = MongoUrl.Create(_container.GetConnectionString());
+        var uniqueDbName = $"AcquireLockTestDb_{Guid.NewGuid():N}";
         var uniqueLockName = $"custom-delay-lock-{Guid.NewGuid()}";
 
         var helper1 = new ServiceCollection()
                       .AddMongo(url, configure: options =>
                       {
-                          options.DefaultDatabase = "AcquireLockTestDb";
+                          options.DefaultDatabase = uniqueDbName;
                           options.HolderId = "holder-1";
                       })
                       .Services
@@ -170,7 +175,7 @@ public class MongoHelperExtensionsIntegrationTests
         var helper2 = new ServiceCollection()
                       .AddMongo(url, configure: options =>
                       {
-                          options.DefaultDatabase = "AcquireLockTestDb";
+                          options.DefaultDatabase = uniqueDbName;
                           options.HolderId = "holder-2";
                       })
                       .Services
@@ -212,10 +217,11 @@ public class MongoHelperExtensionsIntegrationTests
     {
         // Arrange
         var url = MongoUrl.Create(_container.GetConnectionString());
+        var uniqueDbName = $"AcquireLockTestDb_{Guid.NewGuid():N}";
         var mongoHelper = new ServiceCollection()
                           .AddMongo(url, configure: options =>
                           {
-                              options.DefaultDatabase = "AcquireLockTestDb";
+                              options.DefaultDatabase = uniqueDbName;
                           })
                           .Services
                           .BuildServiceProvider()
@@ -232,11 +238,12 @@ public class MongoHelperExtensionsIntegrationTests
     public async Task ExecuteInTransaction_ShouldRetryOnTransientErrorAndEventuallyCommitChanges()
     {
         var url = MongoUrl.Create(_container.GetConnectionString());
+        var uniqueDbName = $"ExecuteInTransactionDb_{Guid.NewGuid():N}";
 
         var mongoHelper = new ServiceCollection()
                           .AddMongo(url, configure: options =>
                           {
-                              options.DefaultDatabase = "ExecuteInTransactionDb";
+                              options.DefaultDatabase = uniqueDbName;
                               options.AddMapping<TestDocument>("TestDocuments");
                               options.AddMapping<Counter>("Counters");
                           })
@@ -307,11 +314,12 @@ public class MongoHelperExtensionsIntegrationTests
     public async Task ExecuteInTransaction_ShouldStopOnApplicationErrorAndRollbackChanges()
     {
         var url = MongoUrl.Create(_container.GetConnectionString());
+        var uniqueDbName = $"ExecuteInTransactionDb_{Guid.NewGuid():N}";
 
         var mongoHelper = new ServiceCollection()
                           .AddMongo(url, configure: options =>
                           {
-                              options.DefaultDatabase = "ExecuteInTransactionDb";
+                              options.DefaultDatabase = uniqueDbName;
                               options.AddMapping<TestDocument>("TestDocuments");
                           })
                           .Services

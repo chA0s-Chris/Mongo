@@ -20,10 +20,11 @@ public class MongoHelperLockIntegrationTests
     {
         // Arrange
         var url = MongoUrl.Create(_container.GetConnectionString());
+        var uniqueDbName = $"LockTestDb_{Guid.NewGuid():N}";
         var serviceProvider = new ServiceCollection()
                               .AddMongo(url, configure: options =>
                               {
-                                  options.DefaultDatabase = "LockTestDb";
+                                  options.DefaultDatabase = uniqueDbName;
                                   options.HolderId = "direct-release-holder";
                               })
                               .Services
@@ -47,10 +48,11 @@ public class MongoHelperLockIntegrationTests
     {
         // Arrange
         var url = MongoUrl.Create(_container.GetConnectionString());
+        var uniqueDbName = $"LockTestDb_{Guid.NewGuid():N}";
         var serviceProvider = new ServiceCollection()
                               .AddMongo(url, configure: options =>
                               {
-                                  options.DefaultDatabase = "LockTestDb";
+                                  options.DefaultDatabase = uniqueDbName;
                                   options.HolderId = "actual-holder";
                               })
                               .Services
@@ -75,10 +77,11 @@ public class MongoHelperLockIntegrationTests
     {
         // Arrange
         var url = MongoUrl.Create(_container.GetConnectionString());
+        var uniqueDbName = $"LockTestDb_{Guid.NewGuid():N}";
         var serviceProvider = new ServiceCollection()
                               .AddMongo(url, configure: options =>
                               {
-                                  options.DefaultDatabase = "LockTestDb";
+                                  options.DefaultDatabase = uniqueDbName;
                                   options.HolderId = "test-holder";
                               })
                               .Services
@@ -109,10 +112,11 @@ public class MongoHelperLockIntegrationTests
     {
         // Arrange
         var url = MongoUrl.Create(_container.GetConnectionString());
+        var uniqueDbName = $"LockTestDb_{Guid.NewGuid():N}";
         var mongoHelper = new ServiceCollection()
                           .AddMongo(url, configure: options =>
                           {
-                              options.DefaultDatabase = "LockTestDb";
+                              options.DefaultDatabase = uniqueDbName;
                           })
                           .Services
                           .BuildServiceProvider()
@@ -137,10 +141,11 @@ public class MongoHelperLockIntegrationTests
     {
         // Arrange
         var url = MongoUrl.Create(_container.GetConnectionString());
+        var uniqueDbName = $"LockTestDb_{Guid.NewGuid():N}";
         var mongoHelper = new ServiceCollection()
                           .AddMongo(url, configure: options =>
                           {
-                              options.DefaultDatabase = "LockTestDb";
+                              options.DefaultDatabase = uniqueDbName;
                           })
                           .Services
                           .BuildServiceProvider()
@@ -165,10 +170,11 @@ public class MongoHelperLockIntegrationTests
     {
         // Arrange
         var url = MongoUrl.Create(_container.GetConnectionString());
+        var uniqueDbName = $"LockTestDb_{Guid.NewGuid():N}";
         var mongoHelper = new ServiceCollection()
                           .AddMongo(url, configure: options =>
                           {
-                              options.DefaultDatabase = "LockTestDb";
+                              options.DefaultDatabase = uniqueDbName;
                           })
                           .Services
                           .BuildServiceProvider()
@@ -188,10 +194,11 @@ public class MongoHelperLockIntegrationTests
     {
         // Arrange
         var url = MongoUrl.Create(_container.GetConnectionString());
+        var uniqueDbName = $"LockTestDb_{Guid.NewGuid():N}";
         var mongoHelper = new ServiceCollection()
                           .AddMongo(url, configure: options =>
                           {
-                              options.DefaultDatabase = "LockTestDb";
+                              options.DefaultDatabase = uniqueDbName;
                           })
                           .Services
                           .BuildServiceProvider()
@@ -219,12 +226,13 @@ public class MongoHelperLockIntegrationTests
     {
         // Arrange
         var url = MongoUrl.Create(_container.GetConnectionString());
+        var uniqueDbName = $"LockTestDb_{Guid.NewGuid():N}";
         var uniqueLockName = $"contended-lock-{Guid.NewGuid()}";
 
         var helper1 = new ServiceCollection()
                       .AddMongo(url, configure: options =>
                       {
-                          options.DefaultDatabase = "LockTestDb";
+                          options.DefaultDatabase = uniqueDbName;
                           options.HolderId = "holder-1";
                       })
                       .Services
@@ -234,7 +242,7 @@ public class MongoHelperLockIntegrationTests
         var helper2 = new ServiceCollection()
                       .AddMongo(url, configure: options =>
                       {
-                          options.DefaultDatabase = "LockTestDb";
+                          options.DefaultDatabase = uniqueDbName;
                           options.HolderId = "holder-2";
                       })
                       .Services
@@ -255,10 +263,11 @@ public class MongoHelperLockIntegrationTests
     {
         // Arrange
         var url = MongoUrl.Create(_container.GetConnectionString());
+        var uniqueDbName = $"LockTestDb_{Guid.NewGuid():N}";
         var mongoHelper = new ServiceCollection()
                           .AddMongo(url, configure: options =>
                           {
-                              options.DefaultDatabase = "LockTestDb";
+                              options.DefaultDatabase = uniqueDbName;
                           })
                           .Services
                           .BuildServiceProvider()
@@ -278,10 +287,11 @@ public class MongoHelperLockIntegrationTests
     {
         // Arrange
         var url = MongoUrl.Create(_container.GetConnectionString());
+        var uniqueDbName = $"LockTestDb_{Guid.NewGuid():N}";
         var mongoHelper = new ServiceCollection()
                           .AddMongo(url, configure: options =>
                           {
-                              options.DefaultDatabase = "LockTestDb";
+                              options.DefaultDatabase = uniqueDbName;
                           })
                           .Services
                           .BuildServiceProvider()
@@ -302,10 +312,11 @@ public class MongoHelperLockIntegrationTests
     {
         // Arrange
         var url = MongoUrl.Create(_container.GetConnectionString());
+        var uniqueDbName = $"LockTestDb_{Guid.NewGuid():N}";
         var mongoHelper = new ServiceCollection()
                           .AddMongo(url, configure: options =>
                           {
-                              options.DefaultDatabase = "LockTestDb";
+                              options.DefaultDatabase = uniqueDbName;
                           })
                           .Services
                           .BuildServiceProvider()
@@ -323,10 +334,11 @@ public class MongoHelperLockIntegrationTests
     {
         // Arrange
         var url = MongoUrl.Create(_container.GetConnectionString());
+        var uniqueDbName = $"LockTestDb_{Guid.NewGuid():N}";
         var mongoHelper = new ServiceCollection()
                           .AddMongo(url, configure: options =>
                           {
-                              options.DefaultDatabase = "LockTestDb";
+                              options.DefaultDatabase = uniqueDbName;
                           })
                           .Services
                           .BuildServiceProvider()
