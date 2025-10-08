@@ -246,6 +246,10 @@ public class MongoQueueSubscription<TPayload> : IMongoQueueSubscription<TPayload
 
                 if (queueItemIds.Count == 0)
                 {
+                    // Brief delay to avoid busy-waiting, then re-signal to check again
+                    // This prevents deadlock when messages are published before change stream starts
+                    await Task.Delay(100, cancellationToken);
+                    _signalSemaphore.Release();
                     continue;
                 }
 
@@ -312,6 +316,10 @@ public class MongoQueueSubscription<TPayload> : IMongoQueueSubscription<TPayload
 
         var collection = _mongoHelper.Database.GetCollection<MongoQueueItem<TPayload>>(_queueDefinition.CollectionName);
         await EnsureIndexesAsync(collection, cancellationToken);
+
+        // Signal initially to start processing any existing messages
+        _signalSemaphore.Release();
+
         _monitorTask = Task.Run(async () => await MonitorChangeStreamAsync(collection, _cancellationTokenSource.Token), cancellationToken);
         _processingTask = Task.Run(async () => await ProcessQueueItemsAsync(collection, _cancellationTokenSource.Token), cancellationToken);
     }
