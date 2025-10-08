@@ -25,7 +25,7 @@ public class MongoQueueItem
     /// <summary>
     /// The unique identifier of the queue item.
     /// </summary>
-    public ObjectId Id { get; init; }
+    public required ObjectId Id { get; init; }
 
     /// <summary>
     /// <c>true</c> if queue item is closed.
