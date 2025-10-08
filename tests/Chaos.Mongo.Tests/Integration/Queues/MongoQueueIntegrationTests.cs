@@ -24,7 +24,8 @@ public class MongoQueueIntegrationTests
         services.AddNUnitTestLogging();
 
         var url = MongoUrl.Create(_container.GetConnectionString());
-        services.AddMongo(url, "QueueAutoStartTest")
+        var uniqueDbName = $"QueueAutoStartTest_{Guid.NewGuid():N}";
+        services.AddMongo(url, uniqueDbName)
                 .WithQueue<TestPayload>(queue => queue
                                                  .WithPayloadHandler(_ => handler)
                                                  .WithCollectionName("test-queue")
@@ -95,7 +96,8 @@ public class MongoQueueIntegrationTests
         services.AddNUnitTestLogging();
 
         var url = MongoUrl.Create(_container.GetConnectionString());
-        services.AddMongo(url, "HostedServiceStopTest")
+        var uniqueDbName = $"HostedServiceStopTest_{Guid.NewGuid():N}";
+        services.AddMongo(url, uniqueDbName)
                 .WithQueue<TestPayload>(queue => queue
                                                  .WithPayloadHandler(_ => handler1)
                                                  .WithCollectionName("test-queue-1")
@@ -154,7 +156,8 @@ public class MongoQueueIntegrationTests
         services.AddNUnitTestLogging();
 
         var url = MongoUrl.Create(_container.GetConnectionString());
-        services.AddMongo(url, "QueueManualStartTest")
+        var uniqueDbName = $"QueueManualStartTest_{Guid.NewGuid():N}";
+        services.AddMongo(url, uniqueDbName)
                 .WithQueue<TestPayload>(queue => queue
                                                  .WithPayloadHandler(_ => handler)
                                                  .WithCollectionName("test-queue")
@@ -202,7 +205,8 @@ public class MongoQueueIntegrationTests
         services.AddNUnitTestLogging();
 
         var url = MongoUrl.Create(_container.GetConnectionString());
-        services.AddMongo(url, "MultipleQueuesTest")
+        var uniqueDbName = $"MultipleQueuesTest_{Guid.NewGuid():N}";
+        services.AddMongo(url, uniqueDbName)
                 .WithQueue<TestPayload>(queue => queue
                                                  .WithPayloadHandler(_ => handler1)
                                                  .WithCollectionName("test-queue-1")
@@ -269,7 +273,8 @@ public class MongoQueueIntegrationTests
         services.AddNUnitTestLogging();
 
         var url = MongoUrl.Create(_container.GetConnectionString());
-        services.AddMongo(url, "QueuePerformanceTest")
+        var uniqueDbName = $"QueuePerformanceTest_{Guid.NewGuid():N}";
+        services.AddMongo(url, uniqueDbName)
                 .WithQueue<TestPayload>(queue => queue
                                                  .WithPayloadHandler(_ => handler)
                                                  .WithCollectionName("test-queue")
@@ -313,7 +318,8 @@ public class MongoQueueIntegrationTests
         services.AddNUnitTestLogging();
 
         var url = MongoUrl.Create(_container.GetConnectionString());
-        services.AddMongo(url, "QueueLifecycleTest")
+        var uniqueDbName = $"QueueLifecycleTest_{Guid.NewGuid():N}";
+        services.AddMongo(url, uniqueDbName)
                 .WithQueue<TestPayload>(queue => queue
                                                  .WithPayloadHandler(_ => handler)
                                                  .WithCollectionName("test-queue")
@@ -381,7 +387,8 @@ public class MongoQueueIntegrationTests
         services.AddNUnitTestLogging();
 
         var url = MongoUrl.Create(_container.GetConnectionString());
-        services.AddMongo(url, "QueueFaultyHandlerTest")
+        var uniqueDbName = $"QueueFaultyHandlerTest_{Guid.NewGuid():N}";
+        services.AddMongo(url, uniqueDbName)
                 .WithQueue<TestPayload>(queue => queue
                                                  .WithPayloadHandler(_ => handler)
                                                  .WithCollectionName("test-queue")
@@ -432,7 +439,8 @@ public class MongoQueueIntegrationTests
         services.AddNUnitTestLogging();
 
         var url = MongoUrl.Create(_container.GetConnectionString());
-        services.AddMongo(url, "EmptyQueueTest")
+        var uniqueDbName = $"EmptyQueueTest_{Guid.NewGuid():N}";
+        services.AddMongo(url, uniqueDbName)
                 .WithQueue<TestPayload>(queue => queue
                                                  .WithPayloadHandler(_ => handler)
                                                  .WithCollectionName("test-queue")
