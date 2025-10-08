@@ -311,7 +311,7 @@ public class MongoQueueBuilderTests
 
         // Assert
         act.Should().Throw<ArgumentException>()
-           .WithMessage("Queue limit must be greater than 0.*");
+           .WithMessage("Query limit must be greater than 0.*");
     }
 
     [Test]
@@ -340,7 +340,7 @@ public class MongoQueueBuilderTests
 
         // Assert
         act.Should().Throw<ArgumentException>()
-           .WithMessage("Queue limit must be greater than 0.*");
+           .WithMessage("Query limit must be greater than 0.*");
     }
 
     public abstract class AbstractPayloadHandler : IMongoQueuePayloadHandler<TestPayload>
