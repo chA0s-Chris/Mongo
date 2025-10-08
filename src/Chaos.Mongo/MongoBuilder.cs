@@ -3,6 +3,7 @@
 namespace Chaos.Mongo;
 
 using Chaos.Mongo.Configuration;
+using Chaos.Mongo.Queues;
 using Chaos.Mongo.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Immutable;
@@ -86,6 +87,33 @@ public class MongoBuilder
         }
 
         DiscoveredConfigurators = [..DiscoveredConfigurators, ..implementationTypes];
+        return this;
+    }
+
+    /// <summary>
+    /// Registers a MongoDB queue with the given payload type and configuration.
+    /// </summary>
+    /// <typeparam name="TPayload">The type of payload stored in the queue.</typeparam>
+    /// <param name="configure">The configuration action for the queue builder.</param>
+    /// <returns>This builder instance for method chaining.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="configure"/> is null.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when a registration for a MongoDB queue with the same payload type already exists.</exception>
+    public MongoBuilder WithQueue<TPayload>(Action<MongoQueueBuilder<TPayload>> configure)
+        where TPayload : class, new()
+    {
+        ArgumentNullException.ThrowIfNull(configure);
+
+        if (_services.Any(s => s.ServiceType == typeof(IMongoQueue<TPayload>)))
+        {
+            throw new InvalidOperationException($"A registration for a MongoDB queue with payload {typeof(TPayload).Name} already exists.");
+        }
+
+        _services.AddMongoQueue();
+
+        var queueBuilder = new MongoQueueBuilder<TPayload>(_services);
+        configure.Invoke(queueBuilder);
+        queueBuilder.RegisterQueue();
+
         return this;
     }
 }
