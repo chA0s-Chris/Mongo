@@ -23,6 +23,11 @@ public static class MongoDefaults
     public const Int32 QueryLimit = 1;
 
     /// <summary>
+    /// The default value indicating whether configurators should run automatically on application startup.
+    /// </summary>
+    public const Boolean RunConfiguratorsOnStartup = false;
+
+    /// <summary>
     /// The default value indicating whether to use CLR type names as collection names when no mapping is found.
     /// </summary>
     public const Boolean UseDefaultCollectionNames = true;

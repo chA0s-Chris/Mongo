@@ -128,6 +128,8 @@ public static class ServiceCollectionExtensions
 
         services.AddTransient<IMongoConfiguratorRunner, MongoConfiguratorRunner>();
 
+        services.AddHostedService<MongoHostedService>(); // only registered once even if called for multiple queues
+
         return new(services);
     }
 }
