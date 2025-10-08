@@ -7,6 +7,9 @@ namespace Chaos.Mongo;
 /// </summary>
 public static class MongoDefaults
 {
+    /// <summary>
+    /// The default value indicating whether queue subscriptions should start automatically on application startup.
+    /// </summary>
     public const Boolean AutoStartSubscription = false;
 
     /// <summary>
@@ -14,6 +17,9 @@ public static class MongoDefaults
     /// </summary>
     public const String LockCollectionName = "_locks";
 
+    /// <summary>
+    /// The default maximum number of queue items to fetch and process in a single query.
+    /// </summary>
     public const Int32 QueryLimit = 1;
 
     /// <summary>

@@ -307,7 +307,7 @@ public class MongoQueueBuilderTests
         var builder = new MongoQueueBuilder<TestPayload>(services);
 
         // Act
-        var act = () => builder.WithQueueLimit(-1);
+        var act = () => builder.WithQueryLimit(-1);
 
         // Assert
         act.Should().Throw<ArgumentException>()
@@ -322,7 +322,7 @@ public class MongoQueueBuilderTests
         var builder = new MongoQueueBuilder<TestPayload>(services);
 
         // Act
-        var result = builder.WithQueueLimit(10);
+        var result = builder.WithQueryLimit(10);
 
         // Assert
         result.Should().BeSameAs(builder);
@@ -336,7 +336,7 @@ public class MongoQueueBuilderTests
         var builder = new MongoQueueBuilder<TestPayload>(services);
 
         // Act
-        var act = () => builder.WithQueueLimit(0);
+        var act = () => builder.WithQueryLimit(0);
 
         // Assert
         act.Should().Throw<ArgumentException>()

@@ -90,6 +90,14 @@ public class MongoBuilder
         return this;
     }
 
+    /// <summary>
+    /// Registers a MongoDB queue with the given payload type and configuration.
+    /// </summary>
+    /// <typeparam name="TPayload">The type of payload stored in the queue.</typeparam>
+    /// <param name="configure">The configuration action for the queue builder.</param>
+    /// <returns>This builder instance for method chaining.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="configure"/> is null.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when a registration for a MongoDB queue with the same payload type already exists.</exception>
     public MongoBuilder WithQueue<TPayload>(Action<MongoQueueBuilder<TPayload>> configure)
         where TPayload : class, new()
     {

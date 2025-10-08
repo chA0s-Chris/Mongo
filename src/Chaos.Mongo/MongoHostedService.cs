@@ -7,11 +7,19 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System.Collections.Immutable;
 
+/// <summary>
+/// Hosted service used for automatic lifecycle management.
+/// </summary>
 public class MongoHostedService : IHostedLifecycleService
 {
     private readonly ILogger<MongoHostedService> _logger;
     private readonly ImmutableArray<IMongoQueue> _queues;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MongoHostedService"/> class.
+    /// </summary>
+    /// <param name="queues">The collection of queues to manage.</param>
+    /// <param name="logger">The logger for diagnostic messages.</param>
     public MongoHostedService(IEnumerable<IMongoQueue> queues,
                               ILogger<MongoHostedService> logger)
     {
@@ -21,6 +29,7 @@ public class MongoHostedService : IHostedLifecycleService
         _queues = [..queues];
     }
 
+    /// <inheritdoc/>
     public async Task StartedAsync(CancellationToken cancellationToken)
     {
         foreach (var queue in _queues.Where(x => x.QueueDefinition.AutoStartSubscription))
@@ -30,10 +39,13 @@ public class MongoHostedService : IHostedLifecycleService
         }
     }
 
+    /// <inheritdoc/>
     public Task StartingAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 
+    /// <inheritdoc/>
     public Task StoppedAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 
+    /// <inheritdoc/>
     public async Task StoppingAsync(CancellationToken cancellationToken)
     {
         foreach (var queue in _queues.Where(x => x.QueueDefinition.AutoStartSubscription))
@@ -43,7 +55,9 @@ public class MongoHostedService : IHostedLifecycleService
         }
     }
 
+    /// <inheritdoc/>
     public Task StartAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 
+    /// <inheritdoc/>
     public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 }

@@ -273,7 +273,7 @@ public class MongoQueueIntegrationTests
                 .WithQueue<TestPayload>(queue => queue
                                                  .WithPayloadHandler(_ => handler)
                                                  .WithCollectionName("test-queue")
-                                                 .WithQueueLimit(10) // Process multiple at once
+                                                 .WithQueryLimit(10) // Process multiple at once
                                                  .WithoutAutoStartSubscription());
 
         var serviceProvider = services.BuildServiceProvider();

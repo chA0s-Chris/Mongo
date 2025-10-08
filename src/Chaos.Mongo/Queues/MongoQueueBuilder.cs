@@ -31,6 +31,15 @@ public sealed class MongoQueueBuilder<TPayload>
         _services = services;
     }
 
+    /// <summary>
+    /// Registers a MongoDB queue with the given payload type and configuration.
+    /// </summary>
+    /// <remarks>
+    /// The queue is registered as a singleton service and uses the provided handler factory to create a payload handler.
+    /// If no collection name is specified, a default name is generated.
+    /// The queue is also registered as a hosted service to allow for multiple queues to be registered.
+    /// <see cref="RegisterQueue"/> is automatically called when <see cref="MongoBuilder.WithQueue"/> is used.
+    /// </remarks>
     public void RegisterQueue()
     {
         if (_isRegistered)
@@ -78,12 +87,26 @@ public sealed class MongoQueueBuilder<TPayload>
         _isRegistered = true;
     }
 
+    /// <summary>
+    /// Configures the queue to automatically start its subscription during application startup.
+    /// </summary>
+    /// <returns>This builder instance for method chaining.</returns>
     public MongoQueueBuilder<TPayload> WithAutoStartSubscription()
     {
         _autoStartSubscription = true;
         return this;
     }
 
+    /// <summary>
+    /// Configures the queue to use a specific collection name.
+    /// </summary>
+    /// <remarks>
+    /// If no collection name is specified, a default name is generated based on the payload type using
+    /// <see cref="IMongoQueueCollectionNameGenerator"/>.
+    /// </remarks>
+    /// <param name="collectionName">The name of the MongoDB collection to use for the queue.</param>
+    /// <returns>This builder instance for method chaining.</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="collectionName"/> is null or whitespace.</exception>
     public MongoQueueBuilder<TPayload> WithCollectionName(String collectionName)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(collectionName);
@@ -91,12 +114,25 @@ public sealed class MongoQueueBuilder<TPayload>
         return this;
     }
 
+    /// <summary>
+    /// Configures the queue to not automatically start its subscription during application startup.
+    /// </summary>
+    /// <remarks>
+    /// The subscription can be started manually using <see cref="IMongoQueue.StartSubscriptionAsync"/>.
+    /// This is the default behavior.
+    /// </remarks>
+    /// <returns>This builder instance for method chaining.</returns>
     public MongoQueueBuilder<TPayload> WithoutAutoStartSubscription()
     {
         _autoStartSubscription = false;
         return this;
     }
 
+    /// <summary>
+    /// Configures the queue to use a specific payload handler type.
+    /// </summary>
+    /// <typeparam name="TPayloadHandler">The type of payload handler to use.</typeparam>
+    /// <returns>This builder instance for method chaining.</returns>
     public MongoQueueBuilder<TPayload> WithPayloadHandler<TPayloadHandler>()
         where TPayloadHandler : class, IMongoQueuePayloadHandler<TPayload>
     {
@@ -104,6 +140,13 @@ public sealed class MongoQueueBuilder<TPayload>
         return this;
     }
 
+    /// <summary>
+    /// Configures the queue to use a specific payload handler type.
+    /// </summary>
+    /// <param name="payloadHandlerType">The type of payload handler to use.</param>
+    /// <returns>This builder instance for method chaining.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="payloadHandlerType"/> is null.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when <paramref name="payloadHandlerType"/> is not a non-abstract class implementing <see cref="IMongoQueuePayloadHandler{TPayload}"/>.</exception>
     public MongoQueueBuilder<TPayload> WithPayloadHandler(Type payloadHandlerType)
     {
         ArgumentNullException.ThrowIfNull(payloadHandlerType);
@@ -119,6 +162,12 @@ public sealed class MongoQueueBuilder<TPayload>
         return this;
     }
 
+    /// <summary>
+    /// Configures the queue to use a specific payload handler factory.
+    /// </summary>
+    /// <param name="payloadHandlerFactory">The factory for creating payload handlers.</param>
+    /// <returns>This builder instance for method chaining.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="payloadHandlerFactory"/> is null.</exception>
     public MongoQueueBuilder<TPayload> WithPayloadHandler(Func<IServiceProvider, IMongoQueuePayloadHandler<TPayload>> payloadHandlerFactory)
     {
         ArgumentNullException.ThrowIfNull(payloadHandlerFactory);
@@ -126,14 +175,23 @@ public sealed class MongoQueueBuilder<TPayload>
         return this;
     }
 
-    public MongoQueueBuilder<TPayload> WithQueueLimit(Int32 queueLimit)
+    /// <summary>
+    /// Configures the queue to use a specific maximum number of queue items to fetch and process in a single query.
+    /// </summary>
+    /// <remarks>
+    /// The default query limit is <see cref="MongoDefaults.QueryLimit"/>
+    /// </remarks>
+    /// <param name="queryLimit">The maximum number of queue items to fetch and process in a single query.</param>
+    /// <returns>This builder instance for method chaining.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="queryLimit"/> is less than or equal to 0.</exception>
+    public MongoQueueBuilder<TPayload> WithQueryLimit(Int32 queryLimit)
     {
-        if (queueLimit <= 0)
+        if (queryLimit <= 0)
         {
-            throw new ArgumentException("Queue limit must be greater than 0.", nameof(queueLimit));
+            throw new ArgumentException("Query limit must be greater than 0.", nameof(queryLimit));
         }
 
-        _queryLimit = queueLimit;
+        _queryLimit = queryLimit;
         return this;
     }
 
