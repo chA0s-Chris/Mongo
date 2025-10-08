@@ -5,6 +5,9 @@ namespace Chaos.Mongo.Queues;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
+/// <summary>
+/// Representation of a MongoDB queue item.
+/// </summary>
 [BsonIgnoreExtraElements]
 public class MongoQueueItem
 {
@@ -14,8 +17,14 @@ public class MongoQueueItem
     [BsonIgnoreIfNull]
     public DateTime? ClosedUtc { get; set; }
 
+    /// <summary>
+    /// Timestamp the queue item was created.
+    /// </summary>
     public required DateTime CreatedUtc { get; init; }
 
+    /// <summary>
+    /// The unique identifier of the queue item.
+    /// </summary>
     public ObjectId Id { get; init; }
 
     /// <summary>
@@ -38,14 +47,10 @@ public class MongoQueueItem
     public DateTime? LockedUtc { get; set; }
 }
 
-[BsonIgnoreExtraElements]
-public class MongoQueueItemWithPayload : MongoQueueItem
-{
-    public required Object Payload { get; init; }
-
-    public required String PayloadType { get; init; }
-}
-
+/// <summary>
+/// Representation of a MongoDB queue item with strongly-typed payload.
+/// </summary>
+/// <typeparam name="TPayload">The type of payload stored in the queue item.</typeparam>
 [BsonIgnoreExtraElements]
 public class MongoQueueItem<TPayload> : MongoQueueItem
     where TPayload : class, new()

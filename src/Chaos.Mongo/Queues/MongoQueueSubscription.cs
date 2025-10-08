@@ -21,13 +21,13 @@ using MongoDB.Driver;
 public class MongoQueueSubscription<TPayload> : IMongoQueueSubscription<TPayload>
     where TPayload : class, new()
 {
-    private readonly SemaphoreSlim _signalSemaphore = new(1, Int32.MaxValue);
     private readonly CancellationTokenSource _cancellationTokenSource = new();
     private readonly ILogger _logger;
     private readonly IMongoHelper _mongoHelper;
     private readonly IMongoQueuePayloadHandlerFactory _payloadHandlerFactory;
     private readonly IMongoQueuePayloadPrioritizer _payloadPrioritizer;
     private readonly MongoQueueDefinition _queueDefinition;
+    private readonly SemaphoreSlim _signalSemaphore = new(1, Int32.MaxValue);
     private readonly TimeProvider _timeProvider;
     private Boolean _isActive;
     private Boolean _isDisposed;
@@ -73,7 +73,7 @@ public class MongoQueueSubscription<TPayload> : IMongoQueueSubscription<TPayload
     /// <param name="collection">The MongoDB collection to create indexes on.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
-    internal Task EnsureIndexesAsync(IMongoCollection<MongoQueueItem<TPayload>> collection, CancellationToken cancellationToken)
+    private Task EnsureIndexesAsync(IMongoCollection<MongoQueueItem<TPayload>> collection, CancellationToken cancellationToken)
         => collection.Indexes
                      .CreateOneOrUpdateAsync(
                          new(Builders<MongoQueueItem<TPayload>>.IndexKeys
@@ -91,14 +91,10 @@ public class MongoQueueSubscription<TPayload> : IMongoQueueSubscription<TPayload
     /// <summary>
     /// Monitors a MongoDB change stream for insert operations and signals the processing task when new items arrive.
     /// </summary>
-    /// <param name="mongoCollection">The MongoDB collection parameter (unused, uses internal collection reference).</param>
+    /// <param name="collection">The MongoDB collection to monitor for insert operations.</param>
     /// <param name="cancellationToken">The cancellation token to stop monitoring.</param>
     /// <returns>A task that completes when monitoring stops.</returns>
-    /// <remarks>
-    /// This method automatically reconnects on transient failures with exponential backoff.
-    /// Multiple inserts in a batch result in a single signal for efficiency.
-    /// </remarks>
-    internal async Task MonitorChangeStreamAsync(IMongoCollection<MongoQueueItem<TPayload>> mongoCollection, CancellationToken cancellationToken)
+    private async Task MonitorChangeStreamAsync(IMongoCollection<MongoQueueItem<TPayload>> collection, CancellationToken cancellationToken)
     {
         var options = new ChangeStreamOptions
         {
@@ -107,7 +103,6 @@ public class MongoQueueSubscription<TPayload> : IMongoQueueSubscription<TPayload
         var pipeline = new EmptyPipelineDefinition<ChangeStreamDocument<MongoQueueItem<TPayload>>>()
             .Match(x => x.OperationType == ChangeStreamOperationType.Insert);
 
-        var collection = _mongoHelper.Database.GetCollection<MongoQueueItem<TPayload>>(_queueDefinition.CollectionName);
         _logger.LogInformation("Watching change stream for collection {CollectionName}", _queueDefinition.CollectionName);
 
         while (!cancellationToken.IsCancellationRequested)
@@ -139,82 +134,15 @@ public class MongoQueueSubscription<TPayload> : IMongoQueueSubscription<TPayload
     }
 
     /// <summary>
-    /// Continuously processes queue items by polling for unlocked, unclosed items and invoking their handlers.
+    /// Processes a queue item with the given identifier.
     /// </summary>
-    /// <param name="mongoCollection">The MongoDB collection parameter (unused, uses internal collection reference).</param>
-    /// <param name="cancellationToken">The cancellation token to stop processing.</param>
-    /// <returns>A task that completes when processing stops.</returns>
+    /// <param name="collection">The MongoDB collection to process queue items from.</param>
+    /// <param name="queueItemId">The identifier of the queue item to process.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
     /// <remarks>
-    /// This method waits for signals from the change stream monitor or self-signals when more items exist.
-    /// Items are locked during processing using optimistic concurrency to prevent duplicate processing.
-    /// Failed operations are retried after a delay.
+    /// The queue item is locked during processing and closed after processing has completed.
+    /// If the queue item is already closed or locked, it is skipped.
     /// </remarks>
-    internal async Task ProcessQueueItemsAsync(IMongoCollection<MongoQueueItem<TPayload>> mongoCollection, CancellationToken cancellationToken)
-    {
-        _logger.LogInformation("Processing items with payload {PayloadType} for queue {CollectionName}",
-                               _queueDefinition.PayloadType.FullName,
-                               _queueDefinition.CollectionName);
-
-        var collection = _mongoHelper.Database.GetCollection<MongoQueueItem<TPayload>>(_queueDefinition.CollectionName);
-
-        var filter = Builders<MongoQueueItem<TPayload>>.Filter.Eq(x => x.IsClosed, false) &
-                     Builders<MongoQueueItem<TPayload>>.Filter.Eq(x => x.IsLocked, false);
-
-        var sortDefinition = _payloadPrioritizer.CreateSortDefinition<TPayload>();
-        var countOptions = new CountOptions
-        {
-            Limit = 1
-        };
-
-        while (!cancellationToken.IsCancellationRequested)
-        {
-            try
-            {
-                await _signalSemaphore.WaitAsync(cancellationToken);
-
-                var queueItemIds = await collection.Find(filter)
-                                                   .Sort(sortDefinition)
-                                                   .Project(x => x.Id)
-                                                   .Limit(_queueDefinition.QueryLimit)
-                                                   .ToListAsync(cancellationToken);
-
-                if (queueItemIds.Count == 0)
-                {
-                    continue;
-                }
-
-                foreach (var queueItemId in queueItemIds)
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    await ProcessQueueItemAsync(collection, queueItemId, cancellationToken);
-                }
-
-                // check if there are unprocessed items left so we don't wait
-                var count = await collection.CountDocumentsAsync(filter, countOptions, cancellationToken);
-                if (count > 0)
-                {
-                    _signalSemaphore.Release();
-                }
-            }
-            catch (OperationCanceledException)
-            {
-                break;
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e,
-                                 "Processing items with payload {PayloadType} of queue {CollectionName} failed",
-                                 _queueDefinition.PayloadType.FullName,
-                                 _queueDefinition.CollectionName);
-                await Task.Delay(TimeSpan.FromSeconds(2), cancellationToken);
-            }
-        }
-
-        _logger.LogInformation("Stopped processing items with payload {PayloadType} for queue {CollectionName}",
-                               _queueDefinition.PayloadType.FullName,
-                               _queueDefinition.CollectionName);
-    }
-
     private async Task ProcessQueueItemAsync(IMongoCollection<MongoQueueItem<TPayload>> collection,
                                              ObjectId queueItemId,
                                              CancellationToken cancellationToken)
@@ -279,9 +207,81 @@ public class MongoQueueSubscription<TPayload> : IMongoQueueSubscription<TPayload
     }
 
     /// <summary>
-    /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources asynchronously.
+    /// Continuously processes queue items by polling for unlocked, unclosed items and invoking their handlers.
     /// </summary>
-    /// <returns>A task that represents the asynchronous dispose operation.</returns>
+    /// <param name="collection">The MongoDB collection to process queue items from.</param>
+    /// <param name="cancellationToken">The cancellation token to stop processing.</param>
+    /// <returns>A task that completes when processing stops.</returns>
+    /// <remarks>
+    /// This method waits for signals from the change stream monitor or self-signals when more items exist.
+    /// Items are locked during processing using optimistic concurrency to prevent duplicate processing.
+    /// Failed operations are retried after a delay.
+    /// </remarks>
+    private async Task ProcessQueueItemsAsync(IMongoCollection<MongoQueueItem<TPayload>> collection, CancellationToken cancellationToken)
+    {
+        _logger.LogInformation("Processing items with payload {PayloadType} for queue {CollectionName}",
+                               _queueDefinition.PayloadType.FullName,
+                               _queueDefinition.CollectionName);
+
+        var filter = Builders<MongoQueueItem<TPayload>>.Filter.Eq(x => x.IsClosed, false) &
+                     Builders<MongoQueueItem<TPayload>>.Filter.Eq(x => x.IsLocked, false);
+
+        var sortDefinition = _payloadPrioritizer.CreateSortDefinition<TPayload>();
+        var countOptions = new CountOptions
+        {
+            Limit = 1
+        };
+
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            try
+            {
+                await _signalSemaphore.WaitAsync(cancellationToken);
+
+                var queueItemIds = await collection.Find(filter)
+                                                   .Sort(sortDefinition)
+                                                   .Project(x => x.Id)
+                                                   .Limit(_queueDefinition.QueryLimit)
+                                                   .ToListAsync(cancellationToken);
+
+                if (queueItemIds.Count == 0)
+                {
+                    continue;
+                }
+
+                foreach (var queueItemId in queueItemIds)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    await ProcessQueueItemAsync(collection, queueItemId, cancellationToken);
+                }
+
+                // check if there are unprocessed items left so we don't wait
+                var count = await collection.CountDocumentsAsync(filter, countOptions, cancellationToken);
+                if (count > 0)
+                {
+                    _signalSemaphore.Release();
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                break;
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e,
+                                 "Processing items with payload {PayloadType} of queue {CollectionName} failed",
+                                 _queueDefinition.PayloadType.FullName,
+                                 _queueDefinition.CollectionName);
+                await Task.Delay(TimeSpan.FromSeconds(2), cancellationToken);
+            }
+        }
+
+        _logger.LogInformation("Stopped processing items with payload {PayloadType} for queue {CollectionName}",
+                               _queueDefinition.PayloadType.FullName,
+                               _queueDefinition.CollectionName);
+    }
+
+    /// <inheritdoc/>
     public async ValueTask DisposeAsync()
     {
         if (_isDisposed)
@@ -296,14 +296,6 @@ public class MongoQueueSubscription<TPayload> : IMongoQueueSubscription<TPayload
     }
 
     /// <inheritdoc/>
-    /// <remarks>
-    /// This method is idempotent - calling it multiple times has no effect if already started.
-    /// Two background tasks are launched:
-    /// <list type="bullet">
-    ///     <item>Change stream monitor for real-time notifications</item>
-    ///     <item>Queue processor for handling items</item>
-    /// </list>
-    /// </remarks>
     public async Task StartAsync(CancellationToken cancellationToken = default)
     {
         if (_isDisposed)
@@ -325,11 +317,6 @@ public class MongoQueueSubscription<TPayload> : IMongoQueueSubscription<TPayload
     }
 
     /// <inheritdoc/>
-    /// <remarks>
-    /// If the cancellation token is triggered before background tasks complete, a warning is logged
-    /// and the method returns, but background tasks may still be running.
-    /// This method is idempotent and safe to call multiple times.
-    /// </remarks>
     public async Task StopAsync(CancellationToken cancellationToken = default)
     {
         if (_isDisposed)

@@ -2,8 +2,14 @@
 // This file is licensed under the MIT license. See LICENSE in the project root for more information.
 namespace Chaos.Mongo.Queues;
 
+/// <summary>
+/// Definition of a MongoDB queue.
+/// </summary>
 public record MongoQueueDefinition
 {
+    /// <summary>
+    /// Whether to automatically start the subscription.
+    /// </summary>
     public required Boolean AutoStartSubscription { get; init; }
 
     /// <summary>
