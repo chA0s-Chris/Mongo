@@ -189,6 +189,49 @@ public class MongoHostedServiceTests
     }
 
     [Test]
+    public async Task StartingAsync_WhenConfiguratorRunnerIsCanceled_PropagatesCancellation()
+    {
+        // Arrange
+        var mockConfiguratorRunner = new Mock<IMongoConfiguratorRunner>();
+        mockConfiguratorRunner.Setup(x => x.RunConfiguratorsAsync(It.IsAny<CancellationToken>()))
+                              .ThrowsAsync(new OperationCanceledException());
+        var options = Options.Create(new MongoOptions
+        {
+            RunConfiguratorsOnStartup = true
+        });
+        var logger = new NUnitTestLogger<MongoHostedService>();
+        var service = new MongoHostedService([], mockConfiguratorRunner.Object, options, logger);
+
+        // Act
+        var act = async () => await service.StartingAsync(CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<OperationCanceledException>();
+    }
+
+    [Test]
+    public void StartingAsync_WhenConfiguratorRunnerThrows_PropagatesException()
+    {
+        // Arrange
+        var mockConfiguratorRunner = new Mock<IMongoConfiguratorRunner>();
+        var expectedException = new InvalidOperationException("Configurator failed");
+        mockConfiguratorRunner.Setup(x => x.RunConfiguratorsAsync(It.IsAny<CancellationToken>()))
+                              .ThrowsAsync(expectedException);
+        var options = Options.Create(new MongoOptions
+        {
+            RunConfiguratorsOnStartup = true
+        });
+        var logger = new NUnitTestLogger<MongoHostedService>();
+        var service = new MongoHostedService([], mockConfiguratorRunner.Object, options, logger);
+
+        // Act
+        var act = async () => await service.StartingAsync(CancellationToken.None);
+
+        // Assert
+        act.Should().ThrowAsync<InvalidOperationException>().WithMessage("Configurator failed");
+    }
+
+    [Test]
     public async Task StartingAsync_WhenRunConfiguratorsOnStartupIsDisabled_DoesNotRunConfigurators()
     {
         // Arrange
@@ -205,6 +248,56 @@ public class MongoHostedServiceTests
 
         // Assert
         mockConfiguratorRunner.Verify(x => x.RunConfiguratorsAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Test]
+    public async Task StartingAsync_WhenRunConfiguratorsOnStartupIsEnabled_PassesCancellationTokenToRunner()
+    {
+        // Arrange
+        var mockConfiguratorRunner = new Mock<IMongoConfiguratorRunner>();
+        var options = Options.Create(new MongoOptions
+        {
+            RunConfiguratorsOnStartup = true
+        });
+        var logger = new NUnitTestLogger<MongoHostedService>();
+        var service = new MongoHostedService([], mockConfiguratorRunner.Object, options, logger);
+        var cancellationToken = CancellationToken.None;
+
+        // Act
+        await service.StartingAsync(cancellationToken);
+
+        // Assert
+        mockConfiguratorRunner.Verify(x => x.RunConfiguratorsAsync(cancellationToken), Times.Once);
+    }
+
+    [Test]
+    public async Task StartingAsync_WhenRunConfiguratorsOnStartupIsEnabled_RunsBeforeStartedAsync()
+    {
+        // Arrange
+        var executionOrder = new List<String>();
+        var mockConfiguratorRunner = new Mock<IMongoConfiguratorRunner>();
+        mockConfiguratorRunner.Setup(x => x.RunConfiguratorsAsync(It.IsAny<CancellationToken>()))
+                              .Callback(() => executionOrder.Add("Configurators"))
+                              .Returns(Task.CompletedTask);
+
+        var mockQueue = CreateMockQueue(true);
+        mockQueue.Setup(x => x.StartSubscriptionAsync(It.IsAny<CancellationToken>()))
+                 .Callback(() => executionOrder.Add("QueueStart"))
+                 .Returns(Task.CompletedTask);
+
+        var options = Options.Create(new MongoOptions
+        {
+            RunConfiguratorsOnStartup = true
+        });
+        var logger = new NUnitTestLogger<MongoHostedService>();
+        var service = new MongoHostedService([mockQueue.Object], mockConfiguratorRunner.Object, options, logger);
+
+        // Act
+        await service.StartingAsync(CancellationToken.None);
+        await service.StartedAsync(CancellationToken.None);
+
+        // Assert
+        executionOrder.Should().Equal("Configurators", "QueueStart");
     }
 
     [Test]
