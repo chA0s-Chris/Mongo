@@ -34,6 +34,17 @@ public sealed record MongoOptions
     public String LockCollectionName { get; set; } = MongoDefaults.LockCollectionName;
 
     /// <summary>
+    /// Gets or sets a value indicating whether to automatically run registered <see cref="Configuration.IMongoConfigurator"/> instances on application startup.
+    /// Defaults to <see cref="MongoDefaults.RunConfiguratorsOnStartup"/>.
+    /// </summary>
+    /// <remarks>
+    /// When set to <c>true</c>, all registered configurators will be executed automatically during application startup
+    /// via the <see cref="MongoHostedService"/>. When <c>false</c>, configurators must be run manually using
+    /// <see cref="Configuration.IMongoConfiguratorRunner"/>.
+    /// </remarks>
+    public Boolean RunConfiguratorsOnStartup { get; set; } = MongoDefaults.RunConfiguratorsOnStartup;
+
+    /// <summary>
     /// Gets or sets the MongoDB connection URL.
     /// </summary>
     public MongoUrl? Url { get; set; }

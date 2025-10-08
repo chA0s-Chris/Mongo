@@ -37,7 +37,6 @@ public sealed class MongoQueueBuilder<TPayload>
     /// <remarks>
     /// The queue is registered as a singleton service and uses the provided handler factory to create a payload handler.
     /// If no collection name is specified, a default name is generated.
-    /// The queue is also registered as a hosted service to allow for multiple queues to be registered.
     /// <see cref="RegisterQueue"/> is automatically called when <see cref="MongoBuilder.WithQueue"/> is used.
     /// </remarks>
     public void RegisterQueue()
@@ -82,7 +81,6 @@ public sealed class MongoQueueBuilder<TPayload>
         });
 
         _services.AddSingleton<IMongoQueue>(serviceProvider => serviceProvider.GetRequiredService<IMongoQueue<TPayload>>());
-        _services.AddHostedService<MongoHostedService>(); // only registered once even if called for multiple queues
 
         _isRegistered = true;
     }

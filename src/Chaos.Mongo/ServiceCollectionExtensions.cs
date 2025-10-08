@@ -126,7 +126,9 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ICollectionTypeMap, CollectionTypeMap>();
         services.AddSingleton<IMongoHelper, MongoHelper>();
 
-        services.AddTransient<IMongoConfiguratorRunner, MongoConfiguratorRunner>();
+        services.AddSingleton<IMongoConfiguratorRunner, MongoConfiguratorRunner>();
+
+        services.AddHostedService<MongoHostedService>(); // only registered once even if called for multiple queues
 
         return new(services);
     }
