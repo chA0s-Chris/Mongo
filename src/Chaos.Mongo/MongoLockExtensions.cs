@@ -20,7 +20,7 @@ public static class MongoLockExtensions
 
         if (!mongoLock.IsValid)
         {
-            throw new InvalidOperationException($"MongoDB lock {mongoLock.Id}' has expired or been released.");
+            throw new InvalidOperationException($"MongoDB lock {mongoLock.Id} has expired or been released.");
         }
 
         return mongoLock;
