@@ -93,7 +93,7 @@ public class MongoMigrationRunner : IMongoMigrationRunner
             return;
         }
 
-        var appliedMigrationIds = (await historyCollection.Find(x => true)
+        var appliedMigrationIds = (await historyCollection.Find(FilterDefinition<MongoMigrationHistoryItem>.Empty)
                                                           .Project(x => x.Id)
                                                           .ToListAsync(cancellationToken)).ToImmutableHashSet();
 
