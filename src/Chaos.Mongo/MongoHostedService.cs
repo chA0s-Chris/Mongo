@@ -3,6 +3,7 @@
 namespace Chaos.Mongo;
 
 using Chaos.Mongo.Configuration;
+using Chaos.Mongo.Migrations;
 using Chaos.Mongo.Queues;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -62,6 +63,15 @@ public class MongoHostedService : IHostedLifecycleService
 
             _logger.LogInformation("Running MongoDB configurators on application startup");
             await configuratorRunner.RunConfiguratorsAsync(cancellationToken);
+        }
+
+        if (_options.ApplyMigrationsOnStartup)
+        {
+            using var scope = _serviceScopeFactory.CreateScope();
+            var migrationRunner = scope.ServiceProvider.GetRequiredService<IMongoMigrationRunner>();
+
+            _logger.LogInformation("Running MongoDB migrations on application startup");
+            await migrationRunner.RunMigrationsAsync(cancellationToken);
         }
     }
 

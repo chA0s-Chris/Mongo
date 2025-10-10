@@ -8,6 +8,11 @@ namespace Chaos.Mongo;
 public static class MongoDefaults
 {
     /// <summary>
+    /// The default value indicating whether migrations should run automatically on application startup.
+    /// </summary>
+    public const Boolean ApplyMigrationsOnStartup = false;
+
+    /// <summary>
     /// The default value indicating whether queue subscriptions should start automatically on application startup.
     /// </summary>
     public const Boolean AutoStartSubscription = false;
@@ -16,6 +21,16 @@ public static class MongoDefaults
     /// The default name of the collection used to store distributed locks.
     /// </summary>
     public const String LockCollectionName = "_locks";
+
+    /// <summary>
+    /// The default name of the collection used to store migration history.
+    /// </summary>
+    public const String MigrationHistoryCollectionName = "_migrations";
+
+    /// <summary>
+    /// The default name of the distributed lock used for migration coordination.
+    /// </summary>
+    public const String MigrationsLockName = "ChaosMongoMigrations";
 
     /// <summary>
     /// The default maximum number of queue items to fetch and process in a single query.
@@ -33,9 +48,19 @@ public static class MongoDefaults
     public const Boolean UseDefaultCollectionNames = true;
 
     /// <summary>
+    /// The default value indicating whether to use transactions for migrations when available.
+    /// </summary>
+    public const Boolean UseTransactionsForMigrationsIfAvailable = true;
+
+    /// <summary>
     /// Gets the default lease time for distributed locks.
     /// </summary>
     public static TimeSpan LockLeaseTime => TimeSpan.FromMinutes(5);
+
+    /// <summary>
+    /// Gets the default lease time for the migration distributed lock.
+    /// </summary>
+    public static TimeSpan MigrationLockLeaseTime => TimeSpan.FromMinutes(10);
 
     /// <summary>
     /// Gets the default delay between lock acquisition retry attempts.
