@@ -40,12 +40,7 @@ public class MongoMigrationRunnerTests
             timeProvider);
 
         // Assert
-        var migrationsField = typeof(MongoMigrationRunner)
-            .GetField("_migrations", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-
-        migrationsField.Should().NotBeNull();
-
-        var migrations = (System.Collections.Immutable.ImmutableArray<IMongoMigration>)migrationsField!.GetValue(sut)!;
+        var migrations = sut.Migrations;
         migrations.Should().HaveCount(3);
         migrations[0].Id.Should().Be("001_First");
         migrations[1].Id.Should().Be("002_Second");

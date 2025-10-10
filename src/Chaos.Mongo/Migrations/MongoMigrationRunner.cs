@@ -31,7 +31,6 @@ using System.Diagnostics;
 public class MongoMigrationRunner : IMongoMigrationRunner
 {
     private readonly ILogger _logger;
-    private readonly ImmutableArray<IMongoMigration> _migrations;
     private readonly IMongoHelper _mongoHelper;
     private readonly MongoOptions _options;
     private readonly TimeProvider _timeProvider;
@@ -63,8 +62,10 @@ public class MongoMigrationRunner : IMongoMigrationRunner
         _logger = logger;
         _options = options.Value;
         _timeProvider = timeProvider;
-        _migrations = [..migrations.OrderBy(x => x.Id, StringComparer.Ordinal)];
+        Migrations = [..migrations.OrderBy(x => x.Id, StringComparer.Ordinal)];
     }
+
+    internal ImmutableArray<IMongoMigration> Migrations { get; }
 
     private async Task AbortTransactionIfActiveAsync(IClientSessionHandle? session, CancellationToken cancellationToken)
     {
@@ -97,7 +98,7 @@ public class MongoMigrationRunner : IMongoMigrationRunner
                                                           .Project(x => x.Id)
                                                           .ToListAsync(cancellationToken)).ToImmutableHashSet();
 
-        var pendingMigrations = _migrations.Where(x => !appliedMigrationIds.Contains(x.Id)).ToImmutableArray();
+        var pendingMigrations = Migrations.Where(x => !appliedMigrationIds.Contains(x.Id)).ToImmutableArray();
         if (pendingMigrations.Length == 0)
         {
             _logger.LogInformation("No pending MongoDB migrations found");
