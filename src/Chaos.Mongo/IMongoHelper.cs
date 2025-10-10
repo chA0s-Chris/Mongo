@@ -7,6 +7,14 @@ using MongoDB.Driver;
 public interface IMongoHelper : IMongoConnection
 {
     /// <summary>
+    /// Get the collection for the specified document type <typeparamref name="TDocument"/>.
+    /// </summary>
+    /// <typeparam name="TDocument">Type of the document.</typeparam>
+    /// <param name="settings">Optional <see cref="MongoCollectionSettings"/>.</param>
+    /// <returns>Collection for the type <typeparamref name="TDocument"/>.</returns>
+    IMongoCollection<TDocument> GetCollection<TDocument>(MongoCollectionSettings? settings = null);
+
+    /// <summary>
     /// Attempt to acquire a distributed lock in MongoDB without retrying.
     /// </summary>
     /// <remarks>
@@ -21,12 +29,4 @@ public interface IMongoHelper : IMongoConnection
     /// <returns>A lock instance if successful, or <c>null</c> if the lock could not be acquired.</returns>
     /// <exception cref="ArgumentException">Thrown when <paramref name="lockName"/> is null or whitespace.</exception>
     Task<IMongoLock?> TryAcquireLockAsync(String lockName, TimeSpan? leaseTime = null, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Get the collection for the specified document type <typeparamref name="TDocument"/>.
-    /// </summary>
-    /// <typeparam name="TDocument">Type of the document.</typeparam>
-    /// <param name="settings">Optional <see cref="MongoCollectionSettings"/>.</param>
-    /// <returns>Collection for the type <typeparamref name="TDocument"/>.</returns>
-    IMongoCollection<TDocument> GetCollection<TDocument>(MongoCollectionSettings? settings = null);
 }

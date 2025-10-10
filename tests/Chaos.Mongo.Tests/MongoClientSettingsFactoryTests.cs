@@ -9,6 +9,19 @@ using NUnit.Framework;
 public class MongoClientSettingsFactoryTests
 {
     [Test]
+    public void CreateMongoClientSettings_WhenUrlIsNull_ThrowsArgumentNull()
+    {
+        // Arrange
+        var factory = new MongoClientSettingsFactory();
+
+        // Act
+        var act = () => factory.CreateMongoClientSettings(null!);
+
+        // Assert
+        act.Should().Throw<ArgumentNullException>();
+    }
+
+    [Test]
     public void CreateMongoClientSettings_WithValidUrl_ReturnsSettingsFromUrl()
     {
         // Arrange
@@ -22,18 +35,5 @@ public class MongoClientSettingsFactoryTests
         settings.Should().NotBeNull();
         settings.Server.Host.Should().Be("localhost");
         settings.Server.Port.Should().Be(27017);
-    }
-
-    [Test]
-    public void CreateMongoClientSettings_WhenUrlIsNull_ThrowsArgumentNull()
-    {
-        // Arrange
-        var factory = new MongoClientSettingsFactory();
-
-        // Act
-        var act = () => factory.CreateMongoClientSettings(null!);
-
-        // Assert
-        act.Should().Throw<ArgumentNullException>();
     }
 }
