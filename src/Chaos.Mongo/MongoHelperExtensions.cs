@@ -112,4 +112,91 @@ public static class MongoHelperExtensions
             transactionOptions,
             cancellationToken);
     }
+
+    /// <summary>
+    /// Attempts to start a MongoDB client session without throwing exceptions.
+    /// </summary>
+    /// <param name="helper">The MongoDB helper instance.</param>
+    /// <param name="options">Optional session options.</param>
+    /// <param name="cancellationToken">Optional cancellation token.</param>
+    /// <returns>A client session if successful, or <c>null</c> if a <see cref="MongoException"/> occurs.</returns>
+    /// <remarks>
+    ///     <para>
+    ///     This method is useful when you want to use sessions if available but continue without them if not supported.
+    ///     For example, standalone MongoDB servers do not support sessions.
+    ///     </para>
+    ///     <para>
+    ///     The caller is responsible for disposing the returned session.
+    ///     </para>
+    /// </remarks>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="helper"/> is null.</exception>
+    public static async Task<IClientSessionHandle?> TryStartSessionAsync(this IMongoHelper helper,
+                                                                         ClientSessionOptions? options = null,
+                                                                         CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(helper);
+
+        try
+        {
+            return await helper.Client.StartSessionAsync(options, cancellationToken);
+        }
+        catch (MongoException)
+        {
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Attempts to start a MongoDB transaction without throwing exceptions.
+    /// </summary>
+    /// <param name="helper">The MongoDB helper instance.</param>
+    /// <param name="sessionOptions">Optional session options.</param>
+    /// <param name="transactionOptions">Optional transaction options.</param>
+    /// <param name="cancellationToken">Optional cancellation token.</param>
+    /// <returns>A client session with an active transaction if successful, or <c>null</c> if transactions are not supported or an error occurs.</returns>
+    /// <remarks>
+    ///     <para>
+    ///     This method is useful when you want to use transactions if available but continue without them if not supported.
+    ///     Transactions may not be available in several scenarios:
+    ///     <list type="bullet">
+    ///         <item>
+    ///             <description>Standalone MongoDB servers (transactions require replica sets or sharded clusters)</description>
+    ///         </item>
+    ///         <item>
+    ///             <description>MongoDB versions older than 4.0</description>
+    ///         </item>
+    ///         <item>
+    ///             <description>Storage engines that don't support transactions</description>
+    ///         </item>
+    ///     </list>
+    ///     </para>
+    ///     <para>
+    ///     If the session is created but the transaction fails to start, the session is automatically disposed.
+    ///     The caller is responsible for disposing the returned session if not null.
+    ///     </para>
+    /// </remarks>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="helper"/> is null.</exception>
+    public static async Task<IClientSessionHandle?> TryStartTransactionAsync(this IMongoHelper helper,
+                                                                             ClientSessionOptions? sessionOptions = null,
+                                                                             TransactionOptions? transactionOptions = null,
+                                                                             CancellationToken cancellationToken = default)
+    {
+        var session = await helper.TryStartSessionAsync(sessionOptions, cancellationToken);
+        if (session is null)
+        {
+            return null;
+        }
+
+        try
+        {
+            session.StartTransaction(transactionOptions);
+            return session;
+        }
+        catch
+        {
+            // there could be multiple reasons for this failure, dispose the session
+            session.Dispose();
+            return null;
+        }
+    }
 }
