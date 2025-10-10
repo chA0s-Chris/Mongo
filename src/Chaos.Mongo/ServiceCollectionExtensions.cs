@@ -3,6 +3,7 @@
 namespace Chaos.Mongo;
 
 using Chaos.Mongo.Configuration;
+using Chaos.Mongo.Migrations;
 using Chaos.Mongo.Queues;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -127,6 +128,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IMongoHelper, MongoHelper>();
 
         services.AddTransient<IMongoConfiguratorRunner, MongoConfiguratorRunner>();
+        services.AddTransient<IMongoMigrationRunner, MongoMigrationRunner>();
 
         services.AddHostedService<MongoHostedService>(); // only registered once even if called for multiple queues
 
