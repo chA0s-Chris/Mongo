@@ -6,6 +6,7 @@ using Chaos.Mongo.Configuration;
 using Chaos.Mongo.Queues;
 using Chaos.Testing.Logging;
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
@@ -13,7 +14,50 @@ using NUnit.Framework;
 public class MongoHostedServiceTests
 {
     [Test]
-    public void Constructor_WhenConfiguratorRunnerIsNull_ThrowsArgumentNullException()
+    public void Constructor_WhenLoggerIsNull_ThrowsArgumentNullException()
+    {
+        // Arrange
+        var mockServiceScopeFactory = new Mock<IServiceScopeFactory>();
+        var options = Options.Create(new MongoOptions());
+
+        // Act
+        var act = () => new MongoHostedService([], mockServiceScopeFactory.Object, options, null!);
+
+        // Assert
+        act.Should().Throw<ArgumentNullException>();
+    }
+
+    [Test]
+    public void Constructor_WhenOptionsIsNull_ThrowsArgumentNullException()
+    {
+        // Arrange
+        var mockServiceScopeFactory = new Mock<IServiceScopeFactory>();
+        var logger = new NUnitTestLogger<MongoHostedService>();
+
+        // Act
+        var act = () => new MongoHostedService([], mockServiceScopeFactory.Object, null!, logger);
+
+        // Assert
+        act.Should().Throw<ArgumentNullException>();
+    }
+
+    [Test]
+    public void Constructor_WhenQueuesIsNull_ThrowsArgumentNullException()
+    {
+        // Arrange
+        var mockServiceScopeFactory = new Mock<IServiceScopeFactory>();
+        var options = Options.Create(new MongoOptions());
+        var logger = new NUnitTestLogger<MongoHostedService>();
+
+        // Act
+        var act = () => new MongoHostedService(null!, mockServiceScopeFactory.Object, options, logger);
+
+        // Assert
+        act.Should().Throw<ArgumentNullException>();
+    }
+
+    [Test]
+    public void Constructor_WhenServiceScopeFactoryIsNull_ThrowsArgumentNullException()
     {
         // Arrange
         var options = Options.Create(new MongoOptions());
@@ -27,58 +71,15 @@ public class MongoHostedServiceTests
     }
 
     [Test]
-    public void Constructor_WhenLoggerIsNull_ThrowsArgumentNullException()
-    {
-        // Arrange
-        var mockConfiguratorRunner = new Mock<IMongoConfiguratorRunner>();
-        var options = Options.Create(new MongoOptions());
-
-        // Act
-        var act = () => new MongoHostedService([], mockConfiguratorRunner.Object, options, null!);
-
-        // Assert
-        act.Should().Throw<ArgumentNullException>();
-    }
-
-    [Test]
-    public void Constructor_WhenOptionsIsNull_ThrowsArgumentNullException()
-    {
-        // Arrange
-        var mockConfiguratorRunner = new Mock<IMongoConfiguratorRunner>();
-        var logger = new NUnitTestLogger<MongoHostedService>();
-
-        // Act
-        var act = () => new MongoHostedService([], mockConfiguratorRunner.Object, null!, logger);
-
-        // Assert
-        act.Should().Throw<ArgumentNullException>();
-    }
-
-    [Test]
-    public void Constructor_WhenQueuesIsNull_ThrowsArgumentNullException()
-    {
-        // Arrange
-        var mockConfiguratorRunner = new Mock<IMongoConfiguratorRunner>();
-        var options = Options.Create(new MongoOptions());
-        var logger = new NUnitTestLogger<MongoHostedService>();
-
-        // Act
-        var act = () => new MongoHostedService(null!, mockConfiguratorRunner.Object, options, logger);
-
-        // Assert
-        act.Should().Throw<ArgumentNullException>();
-    }
-
-    [Test]
     public void Constructor_WithValidParameters_SuccessfullyCreatesInstance()
     {
         // Arrange
-        var mockConfiguratorRunner = new Mock<IMongoConfiguratorRunner>();
+        var mockServiceScopeFactory = new Mock<IServiceScopeFactory>();
         var options = Options.Create(new MongoOptions());
         var logger = new NUnitTestLogger<MongoHostedService>();
 
         // Act
-        var service = new MongoHostedService([], mockConfiguratorRunner.Object, options, logger);
+        var service = new MongoHostedService([], mockServiceScopeFactory.Object, options, logger);
 
         // Assert
         service.Should().NotBeNull();
@@ -88,10 +89,10 @@ public class MongoHostedServiceTests
     public async Task StartAsync_Always_ReturnsCompletedTask()
     {
         // Arrange
-        var mockConfiguratorRunner = new Mock<IMongoConfiguratorRunner>();
+        var mockServiceScopeFactory = new Mock<IServiceScopeFactory>();
         var options = Options.Create(new MongoOptions());
         var logger = new NUnitTestLogger<MongoHostedService>();
-        var service = new MongoHostedService([], mockConfiguratorRunner.Object, options, logger);
+        var service = new MongoHostedService([], mockServiceScopeFactory.Object, options, logger);
 
         // Act
         await service.StartAsync(CancellationToken.None);
@@ -111,10 +112,10 @@ public class MongoHostedServiceTests
             mockQueue1.Object,
             mockQueue2.Object
         };
-        var mockConfiguratorRunner = new Mock<IMongoConfiguratorRunner>();
+        var mockServiceScopeFactory = new Mock<IServiceScopeFactory>();
         var options = Options.Create(new MongoOptions());
         var logger = new NUnitTestLogger<MongoHostedService>();
-        var service = new MongoHostedService(queues, mockConfiguratorRunner.Object, options, logger);
+        var service = new MongoHostedService(queues, mockServiceScopeFactory.Object, options, logger);
 
         // Act
         await service.StartedAsync(CancellationToken.None);
@@ -135,10 +136,10 @@ public class MongoHostedServiceTests
             mockAutoStartQueue.Object,
             mockManualStartQueue.Object
         };
-        var mockConfiguratorRunner = new Mock<IMongoConfiguratorRunner>();
+        var mockServiceScopeFactory = new Mock<IServiceScopeFactory>();
         var options = Options.Create(new MongoOptions());
         var logger = new NUnitTestLogger<MongoHostedService>();
-        var service = new MongoHostedService(queues, mockConfiguratorRunner.Object, options, logger);
+        var service = new MongoHostedService(queues, mockServiceScopeFactory.Object, options, logger);
 
         // Act
         await service.StartedAsync(CancellationToken.None);
@@ -159,10 +160,10 @@ public class MongoHostedServiceTests
             mockQueue1.Object,
             mockQueue2.Object
         };
-        var mockConfiguratorRunner = new Mock<IMongoConfiguratorRunner>();
+        var mockServiceScopeFactory = new Mock<IServiceScopeFactory>();
         var options = Options.Create(new MongoOptions());
         var logger = new NUnitTestLogger<MongoHostedService>();
-        var service = new MongoHostedService(queues, mockConfiguratorRunner.Object, options, logger);
+        var service = new MongoHostedService(queues, mockServiceScopeFactory.Object, options, logger);
 
         // Act
         await service.StartedAsync(CancellationToken.None);
@@ -176,10 +177,10 @@ public class MongoHostedServiceTests
     public async Task StartedAsync_WithNoQueues_CompletesSuccessfully()
     {
         // Arrange
-        var mockConfiguratorRunner = new Mock<IMongoConfiguratorRunner>();
+        var mockServiceScopeFactory = new Mock<IServiceScopeFactory>();
         var options = Options.Create(new MongoOptions());
         var logger = new NUnitTestLogger<MongoHostedService>();
-        var service = new MongoHostedService([], mockConfiguratorRunner.Object, options, logger);
+        var service = new MongoHostedService([], mockServiceScopeFactory.Object, options, logger);
 
         // Act
         await service.StartedAsync(CancellationToken.None);
@@ -195,12 +196,13 @@ public class MongoHostedServiceTests
         var mockConfiguratorRunner = new Mock<IMongoConfiguratorRunner>();
         mockConfiguratorRunner.Setup(x => x.RunConfiguratorsAsync(It.IsAny<CancellationToken>()))
                               .ThrowsAsync(new OperationCanceledException());
+        var mockServiceScopeFactory = CreateMockServiceScopeFactory(mockConfiguratorRunner.Object);
         var options = Options.Create(new MongoOptions
         {
             RunConfiguratorsOnStartup = true
         });
         var logger = new NUnitTestLogger<MongoHostedService>();
-        var service = new MongoHostedService([], mockConfiguratorRunner.Object, options, logger);
+        var service = new MongoHostedService([], mockServiceScopeFactory, options, logger);
 
         // Act
         var act = async () => await service.StartingAsync(CancellationToken.None);
@@ -217,12 +219,13 @@ public class MongoHostedServiceTests
         var expectedException = new InvalidOperationException("Configurator failed");
         mockConfiguratorRunner.Setup(x => x.RunConfiguratorsAsync(It.IsAny<CancellationToken>()))
                               .ThrowsAsync(expectedException);
+        var mockServiceScopeFactory = CreateMockServiceScopeFactory(mockConfiguratorRunner.Object);
         var options = Options.Create(new MongoOptions
         {
             RunConfiguratorsOnStartup = true
         });
         var logger = new NUnitTestLogger<MongoHostedService>();
-        var service = new MongoHostedService([], mockConfiguratorRunner.Object, options, logger);
+        var service = new MongoHostedService([], mockServiceScopeFactory, options, logger);
 
         // Act
         var act = async () => await service.StartingAsync(CancellationToken.None);
@@ -236,12 +239,13 @@ public class MongoHostedServiceTests
     {
         // Arrange
         var mockConfiguratorRunner = new Mock<IMongoConfiguratorRunner>();
+        var mockServiceScopeFactory = CreateMockServiceScopeFactory(mockConfiguratorRunner.Object);
         var options = Options.Create(new MongoOptions
         {
             RunConfiguratorsOnStartup = false
         });
         var logger = new NUnitTestLogger<MongoHostedService>();
-        var service = new MongoHostedService([], mockConfiguratorRunner.Object, options, logger);
+        var service = new MongoHostedService([], mockServiceScopeFactory, options, logger);
 
         // Act
         await service.StartingAsync(CancellationToken.None);
@@ -255,12 +259,13 @@ public class MongoHostedServiceTests
     {
         // Arrange
         var mockConfiguratorRunner = new Mock<IMongoConfiguratorRunner>();
+        var mockServiceScopeFactory = CreateMockServiceScopeFactory(mockConfiguratorRunner.Object);
         var options = Options.Create(new MongoOptions
         {
             RunConfiguratorsOnStartup = true
         });
         var logger = new NUnitTestLogger<MongoHostedService>();
-        var service = new MongoHostedService([], mockConfiguratorRunner.Object, options, logger);
+        var service = new MongoHostedService([], mockServiceScopeFactory, options, logger);
         var cancellationToken = CancellationToken.None;
 
         // Act
@@ -285,12 +290,13 @@ public class MongoHostedServiceTests
                  .Callback(() => executionOrder.Add("QueueStart"))
                  .Returns(Task.CompletedTask);
 
+        var mockServiceScopeFactory = CreateMockServiceScopeFactory(mockConfiguratorRunner.Object);
         var options = Options.Create(new MongoOptions
         {
             RunConfiguratorsOnStartup = true
         });
         var logger = new NUnitTestLogger<MongoHostedService>();
-        var service = new MongoHostedService([mockQueue.Object], mockConfiguratorRunner.Object, options, logger);
+        var service = new MongoHostedService([mockQueue.Object], mockServiceScopeFactory, options, logger);
 
         // Act
         await service.StartingAsync(CancellationToken.None);
@@ -305,12 +311,13 @@ public class MongoHostedServiceTests
     {
         // Arrange
         var mockConfiguratorRunner = new Mock<IMongoConfiguratorRunner>();
+        var mockServiceScopeFactory = CreateMockServiceScopeFactory(mockConfiguratorRunner.Object);
         var options = Options.Create(new MongoOptions
         {
             RunConfiguratorsOnStartup = true
         });
         var logger = new NUnitTestLogger<MongoHostedService>();
-        var service = new MongoHostedService([], mockConfiguratorRunner.Object, options, logger);
+        var service = new MongoHostedService([], mockServiceScopeFactory, options, logger);
 
         // Act
         await service.StartingAsync(CancellationToken.None);
@@ -323,10 +330,10 @@ public class MongoHostedServiceTests
     public async Task StopAsync_Always_ReturnsCompletedTask()
     {
         // Arrange
-        var mockConfiguratorRunner = new Mock<IMongoConfiguratorRunner>();
+        var mockServiceScopeFactory = new Mock<IServiceScopeFactory>();
         var options = Options.Create(new MongoOptions());
         var logger = new NUnitTestLogger<MongoHostedService>();
-        var service = new MongoHostedService([], mockConfiguratorRunner.Object, options, logger);
+        var service = new MongoHostedService([], mockServiceScopeFactory.Object, options, logger);
 
         // Act
         await service.StopAsync(CancellationToken.None);
@@ -339,10 +346,10 @@ public class MongoHostedServiceTests
     public async Task StoppedAsync_Always_ReturnsCompletedTask()
     {
         // Arrange
-        var mockConfiguratorRunner = new Mock<IMongoConfiguratorRunner>();
+        var mockServiceScopeFactory = new Mock<IServiceScopeFactory>();
         var options = Options.Create(new MongoOptions());
         var logger = new NUnitTestLogger<MongoHostedService>();
-        var service = new MongoHostedService([], mockConfiguratorRunner.Object, options, logger);
+        var service = new MongoHostedService([], mockServiceScopeFactory.Object, options, logger);
 
         // Act
         await service.StoppedAsync(CancellationToken.None);
@@ -362,10 +369,10 @@ public class MongoHostedServiceTests
             mockQueue1.Object,
             mockQueue2.Object
         };
-        var mockConfiguratorRunner = new Mock<IMongoConfiguratorRunner>();
+        var mockServiceScopeFactory = new Mock<IServiceScopeFactory>();
         var options = Options.Create(new MongoOptions());
         var logger = new NUnitTestLogger<MongoHostedService>();
-        var service = new MongoHostedService(queues, mockConfiguratorRunner.Object, options, logger);
+        var service = new MongoHostedService(queues, mockServiceScopeFactory.Object, options, logger);
 
         // Act
         await service.StoppingAsync(CancellationToken.None);
@@ -386,10 +393,10 @@ public class MongoHostedServiceTests
             mockAutoStartQueue.Object,
             mockManualStartQueue.Object
         };
-        var mockConfiguratorRunner = new Mock<IMongoConfiguratorRunner>();
+        var mockServiceScopeFactory = new Mock<IServiceScopeFactory>();
         var options = Options.Create(new MongoOptions());
         var logger = new NUnitTestLogger<MongoHostedService>();
-        var service = new MongoHostedService(queues, mockConfiguratorRunner.Object, options, logger);
+        var service = new MongoHostedService(queues, mockServiceScopeFactory.Object, options, logger);
 
         // Act
         await service.StoppingAsync(CancellationToken.None);
@@ -410,10 +417,10 @@ public class MongoHostedServiceTests
             mockQueue1.Object,
             mockQueue2.Object
         };
-        var mockConfiguratorRunner = new Mock<IMongoConfiguratorRunner>();
+        var mockServiceScopeFactory = new Mock<IServiceScopeFactory>();
         var options = Options.Create(new MongoOptions());
         var logger = new NUnitTestLogger<MongoHostedService>();
-        var service = new MongoHostedService(queues, mockConfiguratorRunner.Object, options, logger);
+        var service = new MongoHostedService(queues, mockServiceScopeFactory.Object, options, logger);
 
         // Act
         await service.StoppingAsync(CancellationToken.None);
@@ -427,10 +434,10 @@ public class MongoHostedServiceTests
     public async Task StoppingAsync_WithNoQueues_CompletesSuccessfully()
     {
         // Arrange
-        var mockConfiguratorRunner = new Mock<IMongoConfiguratorRunner>();
+        var mockServiceScopeFactory = new Mock<IServiceScopeFactory>();
         var options = Options.Create(new MongoOptions());
         var logger = new NUnitTestLogger<MongoHostedService>();
-        var service = new MongoHostedService([], mockConfiguratorRunner.Object, options, logger);
+        var service = new MongoHostedService([], mockServiceScopeFactory.Object, options, logger);
 
         // Act
         await service.StoppingAsync(CancellationToken.None);
@@ -458,6 +465,22 @@ public class MongoHostedServiceTests
                  .Returns(Task.CompletedTask);
 
         return mockQueue;
+    }
+
+    private static IServiceScopeFactory CreateMockServiceScopeFactory(IMongoConfiguratorRunner configuratorRunner)
+    {
+        var mockServiceProvider = new Mock<IServiceProvider>();
+        mockServiceProvider.Setup(x => x.GetService(typeof(IMongoConfiguratorRunner)))
+                           .Returns(configuratorRunner);
+
+        var mockScope = new Mock<IServiceScope>();
+        mockScope.Setup(x => x.ServiceProvider).Returns(mockServiceProvider.Object);
+
+        var mockServiceScopeFactory = new Mock<IServiceScopeFactory>();
+        mockServiceScopeFactory.Setup(x => x.CreateScope())
+                               .Returns(mockScope.Object);
+
+        return mockServiceScopeFactory.Object;
     }
 
     public class TestPayload;

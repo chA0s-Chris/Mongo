@@ -4,6 +4,7 @@ namespace Chaos.Mongo;
 
 using Chaos.Mongo.Configuration;
 using Chaos.Mongo.Queues;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -14,30 +15,30 @@ using System.Collections.Immutable;
 /// </summary>
 public class MongoHostedService : IHostedLifecycleService
 {
-    private readonly IMongoConfiguratorRunner _configuratorRunner;
     private readonly ILogger<MongoHostedService> _logger;
     private readonly MongoOptions _options;
     private readonly ImmutableArray<IMongoQueue> _queues;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MongoHostedService"/> class.
     /// </summary>
     /// <param name="queues">The collection of queues to manage.</param>
-    /// <param name="configuratorRunner">The configurator runner for executing MongoDB configuration.</param>
+    /// <param name="serviceScopeFactory">The service scope factory for resolving scoped user components.</param>
     /// <param name="options">The MongoDB options.</param>
     /// <param name="logger">The logger for diagnostic messages.</param>
     public MongoHostedService(IEnumerable<IMongoQueue> queues,
-                              IMongoConfiguratorRunner configuratorRunner,
+                              IServiceScopeFactory serviceScopeFactory,
                               IOptions<MongoOptions> options,
                               ILogger<MongoHostedService> logger)
     {
         ArgumentNullException.ThrowIfNull(queues);
-        ArgumentNullException.ThrowIfNull(configuratorRunner);
+        ArgumentNullException.ThrowIfNull(serviceScopeFactory);
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(logger);
-        _logger = logger;
         _queues = [..queues];
-        _configuratorRunner = configuratorRunner;
+        _serviceScopeFactory = serviceScopeFactory;
+        _logger = logger;
         _options = options.Value;
     }
 
@@ -56,8 +57,11 @@ public class MongoHostedService : IHostedLifecycleService
     {
         if (_options.RunConfiguratorsOnStartup)
         {
+            using var scope = _serviceScopeFactory.CreateScope();
+            var configuratorRunner = scope.ServiceProvider.GetRequiredService<IMongoConfiguratorRunner>();
+
             _logger.LogInformation("Running MongoDB configurators on application startup");
-            await _configuratorRunner.RunConfiguratorsAsync(cancellationToken);
+            await configuratorRunner.RunConfiguratorsAsync(cancellationToken);
         }
     }
 
