@@ -10,7 +10,7 @@
     <Description>Chaos.Mongo -</Description>
     <Authors>Christian Flessa</Authors>
     <Copyright>Copyright © 2025 Christian Flessa</Copyright>
-    <PackageProjectUrl>https://github.com/chA0s-Chris/Mongo</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/chA0s-Chris/Chaos.Mongo</PackageProjectUrl>
     <PackageTags>MongoDB</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <DefineConstants>$(DefineConstants);$(AdditionalConstants)</DefineConstants>
