@@ -2,6 +2,7 @@
 // This file is licensed under the MIT license. See LICENSE in the project root for more information.
 namespace Chaos.Mongo;
 
+using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 
 /// <summary>
@@ -9,10 +10,24 @@ using MongoDB.Driver;
 /// </summary>
 public class MongoClientSettingsFactory : IMongoClientSettingsFactory
 {
+    private readonly MongoOptions? _options;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MongoClientSettingsFactory"/> class.
+    /// </summary>
+    /// <param name="options">Optional MongoDB configuration options that can be used to configure the client settings.</param>
+    public MongoClientSettingsFactory(IOptions<MongoOptions>? options)
+    {
+        _options = options?.Value;
+    }
+
     /// <inheritdoc/>
     public MongoClientSettings CreateMongoClientSettings(MongoUrl url)
     {
         ArgumentNullException.ThrowIfNull(url);
-        return MongoClientSettings.FromUrl(url);
+        var settings = MongoClientSettings.FromUrl(url);
+
+        _options?.ConfigureClientSettings?.Invoke(settings);
+        return settings;
     }
 }

@@ -38,6 +38,16 @@ public sealed record MongoOptions
     public Dictionary<Type, String> CollectionTypeMap { get; init; } = [];
 
     /// <summary>
+    /// Gets or sets an action to configure the <see cref="MongoClientSettings"/> used to create
+    /// <see cref="IMongoClient"/>'s underlying <see cref="MongoClient"/> instance.
+    /// </summary>
+    /// <remarks>
+    /// The default implementation of <see cref="IMongoClientSettingsFactory"/> invokes this action
+    /// if it is set. Otherwise, the settings are created using <see cref="MongoClientSettings.FromUrl(MongoUrl)"/>.
+    /// </remarks>
+    public Action<MongoClientSettings>? ConfigureClientSettings { get; set; }
+
+    /// <summary>
     /// Gets or sets the default database name to use when not specified in the URL.
     /// </summary>
     public String? DefaultDatabase { get; set; }
