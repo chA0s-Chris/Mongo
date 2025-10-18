@@ -10,7 +10,8 @@ using MongoDB.Driver;
 public sealed record MongoOptions
 {
     /// <summary>
-    /// Gets or sets a value indicating whether to automatically run registered <see cref="Migrations.IMongoMigration"/> instances on application startup.
+    /// Gets or sets a value indicating whether to automatically run registered <see cref="Migrations.IMongoMigration"/>
+    /// instances on application startup.
     /// Defaults to <see cref="MongoDefaults.ApplyMigrationsOnStartup"/>.
     /// </summary>
     /// <remarks>
@@ -29,6 +30,11 @@ public sealed record MongoOptions
     /// <summary>
     /// Gets or initializes the dictionary mapping CLR types to MongoDB collection names.
     /// </summary>
+    /// <remarks>
+    /// If a type is not found in the dictionary, the default collection name is used when
+    /// <see cref="UseDefaultCollectionNames"/> is set to <c>true</c>. Otherwise, a <see cref="KeyNotFoundException"/>
+    /// is thrown at runtime.
+    /// </remarks>
     public Dictionary<Type, String> CollectionTypeMap { get; init; } = [];
 
     /// <summary>
@@ -87,7 +93,8 @@ public sealed record MongoOptions
     public String MigrationsLockName { get; set; } = MongoDefaults.MigrationsLockName;
 
     /// <summary>
-    /// Gets or sets a value indicating whether to automatically run registered <see cref="Configuration.IMongoConfigurator"/> instances on application startup.
+    /// Gets or sets a value indicating whether to automatically run registered <see cref="Configuration.IMongoConfigurator"/>
+    /// instances on application startup.
     /// Defaults to <see cref="MongoDefaults.RunConfiguratorsOnStartup"/>.
     /// </summary>
     /// <remarks>
@@ -106,6 +113,10 @@ public sealed record MongoOptions
     /// Gets or sets a value indicating whether to use the CLR type name as the collection name when no mapping is found.
     /// Defaults to <see cref="MongoDefaults.UseDefaultCollectionNames"/>.
     /// </summary>
+    /// <remarks>
+    /// If a type is not present in <see cref="CollectionTypeMap"/> and <see cref="UseDefaultCollectionNames"/>
+    /// is set to <c>false</c>, a <see cref="KeyNotFoundException"/> is thrown at runtime.
+    /// </remarks>
     public Boolean UseDefaultCollectionNames { get; set; } = MongoDefaults.UseDefaultCollectionNames;
 
     /// <summary>
@@ -126,11 +137,16 @@ public sealed record MongoOptions
     ///     Set to <c>false</c> to disable transactional migration execution entirely.
     ///     </para>
     /// </remarks>
-    public Boolean UseTransactionsForMigrationsIfAvailable { get; set; } = MongoDefaults.UseTransactionsForMigrationsIfAvailable;
+    public Boolean UseTransactionsForMigrationsIfAvailable { get; set; } =
+        MongoDefaults.UseTransactionsForMigrationsIfAvailable;
 
     /// <summary>
     /// Adds a type-to-collection name mapping.
     /// </summary>
+    /// <remarks>
+    /// Mappings are stored in <see cref="CollectionTypeMap"/>.
+    /// This method is a convenience wrapper for adding a mapping to the dictionary.
+    /// </remarks>
     /// <typeparam name="T">The CLR type to map.</typeparam>
     /// <param name="collectionName">The MongoDB collection name. If null, the type name is used.</param>
     /// <returns>This <see cref="MongoOptions"/> instance for method chaining.</returns>
@@ -139,6 +155,10 @@ public sealed record MongoOptions
     /// <summary>
     /// Adds a type-to-collection name mapping.
     /// </summary>
+    /// <remarks>
+    /// Mappings are stored in <see cref="CollectionTypeMap"/>.
+    /// This method is a convenience wrapper for adding a mapping to the dictionary.
+    /// </remarks>
     /// <param name="type">The CLR type to map.</param>
     /// <param name="collectionName">The MongoDB collection name. If null, the type name is used.</param>
     /// <returns>This <see cref="MongoOptions"/> instance for method chaining.</returns>
