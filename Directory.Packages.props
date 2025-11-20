@@ -19,7 +19,7 @@
     <PackageVersion Include="JUnitTestLogger" Version="1.1.0" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.0.0" />
     <PackageVersion Include="Microsoft.TestPlatform.TestHost" Version="18.0.0" />
-    <PackageVersion Include="MongoDB.Driver" Version="3.5.0" />
+    <PackageVersion Include="MongoDB.Driver" Version="3.5.1" />
     <PackageVersion Include="Moq" Version="4.20.72" />
     <PackageVersion Include="NUnit" Version="4.4.0" />
     <PackageVersion Include="NUnit.Analyzers" Version="4.10.0" />
