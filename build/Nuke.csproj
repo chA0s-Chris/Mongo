@@ -16,7 +16,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Nuke.Common" Version="9.0.4" />
+    <PackageReference Include="Nuke.Common" Version="10.0.0" />
     <PackageReference Include="SemanticVersioning" Version="3.0.0" />
   </ItemGroup>
 
